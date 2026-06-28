@@ -1,0 +1,13 @@
+[build-system]
+requires=["setuptools>=69","wheel"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="hrtk"
+version="0.1.0a1"
+description="Haryana Revenue Toolkit"
+requires-python=">=3.12"
+dependencies=[
+ "PySide6>=6.8",
+ "PyYAML>=6.0",
+]
