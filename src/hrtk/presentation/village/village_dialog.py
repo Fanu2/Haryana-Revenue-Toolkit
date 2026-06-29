@@ -135,3 +135,30 @@ class VillageDialog(BaseDialog):
         self._tehsil_edit.setText(village.tehsil)
         self._district_edit.setText(village.district)
         self._state_edit.setText(village.state)
+    def update_village(
+        self,
+        village: Village,
+    ) -> None:
+        """
+        Update an existing Village from the dialog.
+        """
+
+        village.change_code(
+            self._code_edit.text().strip()
+        )
+
+        village.rename(
+            self._name_edit.text().strip()
+        )
+
+        village.change_tehsil(
+            self._tehsil_edit.text().strip()
+        )
+
+        village.change_district(
+            self._district_edit.text().strip()
+        )
+
+        village.change_state(
+            self._state_edit.text().strip()
+        )

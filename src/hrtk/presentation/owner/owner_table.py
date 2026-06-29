@@ -1,7 +1,7 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Village Table.
+Owner Table.
 """
 
 from __future__ import annotations
@@ -13,20 +13,20 @@ from PySide6.QtWidgets import (
     QTableView,
 )
 
-from hrtk.domain.village import Village
-from hrtk.presentation.village.village_model import VillageModel
+from hrtk.domain.owner import Owner
+from hrtk.presentation.owner.owner_model import OwnerModel
 
 
-class VillageTable(QTableView):
+class OwnerTable(QTableView):
     """
-    Table view for Village entities.
+    Table view for Owner entities.
     """
 
-    village_activated = Signal(Village)
+    owner_activated = Signal(Owner)
 
     def __init__(
         self,
-        model: VillageModel,
+        model: OwnerModel,
     ) -> None:
         super().__init__()
 
@@ -34,41 +34,32 @@ class VillageTable(QTableView):
 
         self._configure()
 
-        #
-        # Single-click selects the village.
-        #
-        self.clicked.connect(
-            self._on_clicked,
+        self.doubleClicked.connect(
+            self._on_double_clicked
         )
 
     @property
-    def village_model(self) -> VillageModel:
+    def owner_model(self) -> OwnerModel:
         """
-        Return the village model.
+        Return the owner model.
         """
         model = self.model()
-
-        assert isinstance(
-            model,
-            VillageModel,
-        )
-
+        assert isinstance(model, OwnerModel)
         return model
 
-    def selected_village(
+    def selected_owner(
         self,
-    ) -> Village | None:
+    ) -> Owner | None:
         """
-        Return the selected village.
+        Return the selected owner.
         """
-
         indexes = self.selectionModel().selectedRows()
 
         if not indexes:
             return None
 
-        return self.village_model.village(
-            indexes[0].row(),
+        return self.owner_model.owner(
+            indexes[0].row()
         )
 
     def _configure(self) -> None:
@@ -81,15 +72,15 @@ class VillageTable(QTableView):
         self.setSortingEnabled(True)
 
         self.setSelectionBehavior(
-            QAbstractItemView.SelectRows,
+            QAbstractItemView.SelectRows
         )
 
         self.setSelectionMode(
-            QAbstractItemView.SingleSelection,
+            QAbstractItemView.SingleSelection
         )
 
         self.setEditTriggers(
-            QAbstractItemView.NoEditTriggers,
+            QAbstractItemView.NoEditTriggers
         )
 
         self.setWordWrap(False)
@@ -101,22 +92,22 @@ class VillageTable(QTableView):
         header.setStretchLastSection(True)
 
         header.setSectionResizeMode(
-            QHeaderView.ResizeToContents,
+            QHeaderView.ResizeToContents
         )
 
-    def _on_clicked(
+    def _on_double_clicked(
         self,
         index,
-    ) -> None:
+        ) -> None:
         """
-        Handle row selection.
+        Handle double-click.
         """
 
-        village = self.village_model.village(
-            index.row(),
+        owner = self.owner_model.owner(
+            index.row()
         )
 
-        if village is not None:
-            self.village_activated.emit(
-                village,
+        if owner is not None:
+            self.owner_activated.emit(
+                owner
             )

@@ -1,7 +1,7 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Village Toolbar.
+Owner Toolbar.
 """
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ from PySide6.QtWidgets import (
 )
 
 
-class VillageToolbar(QToolBar):
+class OwnerToolbar(QToolBar):
     """
-    Toolbar for Village management.
+    Toolbar for Owner management.
     """
 
     add_requested = Signal()
@@ -27,15 +27,14 @@ class VillageToolbar(QToolBar):
     search_text_changed = Signal(str)
 
     def __init__(self) -> None:
-        super().__init__("Village")
+        super().__init__("Owners")
 
         self._create_actions()
         self._create_search()
 
         #
-        # Initial state
+        # No owner selected initially.
         #
-
         self.enable_selection_actions(False)
 
     @property
@@ -50,11 +49,17 @@ class VillageToolbar(QToolBar):
         enabled: bool,
     ) -> None:
         """
-        Enable actions requiring a selected village.
+        Enable actions requiring a selected owner.
         """
 
         self._edit_action.setEnabled(enabled)
         self._deactivate_action.setEnabled(enabled)
+
+    def clear_search(self) -> None:
+        """
+        Clear the search box.
+        """
+        self._search.clear()
 
     def _create_actions(self) -> None:
         """
@@ -115,7 +120,7 @@ class VillageToolbar(QToolBar):
         self._search = QLineEdit(self)
 
         self._search.setPlaceholderText(
-            "Search villages..."
+            "Search owners..."
         )
 
         self._search.textChanged.connect(
@@ -123,9 +128,3 @@ class VillageToolbar(QToolBar):
         )
 
         self.addWidget(self._search)
-
-    def clear_search(self) -> None:
-        """
-        Clear the search box.
-        """
-        self._search.clear()

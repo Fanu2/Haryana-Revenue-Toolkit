@@ -12,6 +12,7 @@ Responsibilities
 * Create the LoggingManager.
 * Create application repositories.
 * Create application services.
+* Create the SelectionContext.
 * Expose shared services.
 
 Non-responsibilities
@@ -25,16 +26,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from hrtk.application.selection_context import SelectionContext
 from hrtk.infrastructure.configuration import ConfigurationManager
 from hrtk.infrastructure.filesystem import Workspace
 from hrtk.infrastructure.logging import LoggingManager
 
-from hrtk.repositories.village_repository import (
-    VillageRepository,
-)
-from hrtk.services.village_service import (
-    VillageService,
-)
+from hrtk.repositories.owner_repository import OwnerRepository
+from hrtk.repositories.village_repository import VillageRepository
+
+from hrtk.services.owner_service import OwnerService
+from hrtk.services.village_service import VillageService
 
 
 class ApplicationContext:
@@ -68,12 +69,18 @@ class ApplicationContext:
         )
 
         #
+        # Application state
+        #
+
+        self._selection = SelectionContext()
+
+        #
         # Repositories
         #
 
-        self._village_repository = (
-            VillageRepository()
-        )
+        self._village_repository = VillageRepository()
+
+        self._owner_repository = OwnerRepository()
 
         #
         # Services
@@ -81,6 +88,10 @@ class ApplicationContext:
 
         self._village_service = VillageService(
             self._village_repository
+        )
+
+        self._owner_service = OwnerService(
+            self._owner_repository
         )
 
         self._logging.logger.info(
@@ -95,9 +106,7 @@ class ApplicationContext:
         return self._workspace
 
     @property
-    def configuration(
-        self,
-    ) -> ConfigurationManager:
+    def configuration(self) -> ConfigurationManager:
         """
         Return the ConfigurationManager.
         """
@@ -109,6 +118,13 @@ class ApplicationContext:
         Return the LoggingManager.
         """
         return self._logging
+
+    @property
+    def selection(self) -> SelectionContext:
+        """
+        Return the SelectionContext.
+        """
+        return self._selection
 
     @property
     def village_repository(
@@ -127,6 +143,24 @@ class ApplicationContext:
         Return the VillageService.
         """
         return self._village_service
+
+    @property
+    def owner_repository(
+        self,
+    ) -> OwnerRepository:
+        """
+        Return the OwnerRepository.
+        """
+        return self._owner_repository
+
+    @property
+    def owner_service(
+        self,
+    ) -> OwnerService:
+        """
+        Return the OwnerService.
+        """
+        return self._owner_service
 
     def shutdown(self) -> None:
         """
