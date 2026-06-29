@@ -1,116 +1,100 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Village Management Widget.
+Village Widget.
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
-    QLabel,
     QVBoxLayout,
     QWidget,
 )
 
-from hrtk.application.application_context import ApplicationContext
+from hrtk.presentation.common.form_mode import FormMode
+from hrtk.presentation.village.village_dialog import VillageDialog
+from hrtk.presentation.village.village_model import VillageModel
 from hrtk.presentation.village.village_table import VillageTable
 from hrtk.presentation.village.village_toolbar import VillageToolbar
+from hrtk.services.village_service import VillageService
 
 
 class VillageWidget(QWidget):
     """
-    Village Management page.
+    Main widget for Village management.
     """
 
     def __init__(
         self,
-        context: ApplicationContext,
+        service: VillageService,
     ) -> None:
         super().__init__()
 
-        self._context = context
+        self._service = service
 
+        self._model = VillageModel(service)
         self._toolbar = VillageToolbar()
-        self._table = VillageTable()
-        self._status = QLabel("0 villages")
+        self._table = VillageTable(self._model)
 
         self._build_ui()
+        self._connect_signals()
 
     @property
-    def context(self) -> ApplicationContext:
-        """Return the application context."""
-        return self._context
-
-    @property
-    def toolbar(self) -> VillageToolbar:
-        """Return the village toolbar."""
-        return self._toolbar
+    def model(self) -> VillageModel:
+        """
+        Return the village model.
+        """
+        return self._model
 
     @property
     def table(self) -> VillageTable:
-        """Return the village table."""
+        """
+        Return the village table.
+        """
         return self._table
 
+    @property
+    def toolbar(self) -> VillageToolbar:
+        """
+        Return the village toolbar.
+        """
+        return self._toolbar
+
     def _build_ui(self) -> None:
-        """Construct the page."""
+        """
+        Build the user interface.
+        """
 
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
 
-        #
-        # Title
-        #
-        title = QLabel("Village Management")
-
-        font = QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-
-        title.setFont(font)
-
-        title.setAlignment(
-            Qt.AlignmentFlag.AlignLeft
-        )
-
-        layout.addWidget(title)
-
-        #
-        # Toolbar
-        #
         layout.addWidget(self._toolbar)
-
-        #
-        # Table
-        #
         layout.addWidget(self._table)
 
-        #
-        # Status
-        #
-        self._status.setAlignment(
-            Qt.AlignmentFlag.AlignRight
-        )
+        self.setLayout(layout)
 
-        layout.addWidget(self._status)
-
-    def set_village_count(
-        self,
-        count: int,
-    ) -> None:
+    def _connect_signals(self) -> None:
         """
-        Update the status label.
+        Connect widget signals.
         """
 
-        if count == 1:
-            text = "1 village"
-        else:
-            text = f"{count} villages"
-
-        self._status.setText(text)
-
-    def __repr__(self) -> str:
-        return (
-            f"VillageWidget("
-            f"rows={self.table.rowCount()})"
+        self._toolbar.add_requested.connect(
+            self._add_village
         )
+
+    def _add_village(self) -> None:
+        """
+        Add a new village.
+        """
+
+        dialog = VillageDialog(
+            FormMode.CREATE,
+        )
+
+        if not dialog.exec():
+            return
+
+        village = dialog.village()
+
+        self._service.register(village)
+
+        self._model.refresh()

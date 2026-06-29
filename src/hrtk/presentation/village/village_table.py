@@ -6,86 +6,106 @@ Village Table.
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
-    QTableWidget,
+    QTableView,
 )
 
+from hrtk.domain.village import Village
+from hrtk.presentation.village.village_model import VillageModel
 
-class VillageTable(QTableWidget):
+
+class VillageTable(QTableView):
     """
-    Displays villages.
+    Table view for Village entities.
     """
 
-    HEADERS = (
-        "Code",
-        "Village",
-        "Tehsil",
-        "District",
-        "State",
-        "Status",
-    )
+    village_activated = Signal(Village)
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        model: VillageModel,
+    ) -> None:
         super().__init__()
+
+        self.setModel(model)
 
         self._configure()
 
-    def _configure(self) -> None:
-        """Configure the table."""
+        self.doubleClicked.connect(
+            self._on_double_clicked
+        )
 
-        self.setColumnCount(len(self.HEADERS))
-        self.setHorizontalHeaderLabels(self.HEADERS)
+    @property
+    def village_model(self) -> VillageModel:
+        """
+        Return the village model.
+        """
+        return self.model()
+
+    def selected_village(
+        self,
+    ) -> Village | None:
+        """
+        Return the selected village.
+        """
+        indexes = self.selectionModel().selectedRows()
+
+        if not indexes:
+            return None
+
+        return self.village_model.village(
+            indexes[0].row()
+        )
+
+    def _configure(self) -> None:
+        """
+        Configure the table.
+        """
 
         self.setAlternatingRowColors(True)
 
+        self.setSortingEnabled(True)
+
         self.setSelectionBehavior(
-            QAbstractItemView.SelectionBehavior.SelectRows
+            QAbstractItemView.SelectRows
         )
 
         self.setSelectionMode(
-            QAbstractItemView.SelectionMode.SingleSelection
+            QAbstractItemView.SingleSelection
         )
 
         self.setEditTriggers(
-            QAbstractItemView.EditTrigger.NoEditTriggers
+            QAbstractItemView.NoEditTriggers
         )
 
-        self.setSortingEnabled(True)
+        self.setWordWrap(False)
 
-        self.verticalHeader().setVisible(False)
+        self.verticalHeader().hide()
 
         header = self.horizontalHeader()
 
         header.setStretchLastSection(True)
 
         header.setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
+            QHeaderView.ResizeToContents
         )
 
-        self.setShowGrid(True)
+    def _on_double_clicked(
+        self,
+        index,
+    ) -> None:
+        """
+        Handle double-click.
+        """
 
-    @property
-    def selected_row(self) -> int:
-        """Return the selected row."""
-
-        rows = self.selectionModel().selectedRows()
-
-        if not rows:
-            return -1
-
-        return rows[0].row()
-
-    def clear_data(self) -> None:
-        """Remove all rows."""
-
-        self.setRowCount(0)
-
-    def __repr__(self) -> str:
-        return (
-            f"VillageTable("
-            f"rows={self.rowCount()}, "
-            f"columns={self.columnCount()})"
+        village = self.village_model.village(
+            index.row()
         )
+
+        if village is not None:
+            self.village_activated.emit(
+                village
+            )
