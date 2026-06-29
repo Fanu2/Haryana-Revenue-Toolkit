@@ -1,28 +1,37 @@
-# Bytecode
+# Python
 __pycache__/
 *.py[cod]
-
-# Pytest
-.pytest_cache/
-
-# Packaging
-*.egg-info/
-build/
-dist/
+*.pyo
+*.pyd
 
 # Virtual environments
 .venv/
 venv/
 env/
 
-# IDEs
+# IDE
 .vscode/
 .idea/
 
-# Coverage
-.coverage
-htmlcov/
+# Pytest
+.pytest_cache/
 
-# OS
+# Ruff / MyPy
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Workspace data
+workspace/
+
+# Logs
+*.log
+logs/
+
+# OS files
 Thumbs.db
 .DS_Store
