@@ -12,7 +12,7 @@ from hrtk.domain.value_objects.parcel_number import (
     ParcelNumber,
 )
 from hrtk.infrastructure.sqlite.database import (
-    create_database,
+    reset_database,
 )
 from hrtk.infrastructure.sqlite.sqlite_parcel_repository import (
     SQLiteParcelRepository,
@@ -24,7 +24,7 @@ def test_add_and_get_parcel() -> None:
     Save a parcel and retrieve it.
     """
 
-    create_database()
+    reset_database()
 
     repository = SQLiteParcelRepository()
 
@@ -41,9 +41,7 @@ def test_add_and_get_parcel() -> None:
         remarks="Repository Test",
     )
 
-    repository.add(
-        parcel,
-    )
+    repository.add(parcel)
 
     loaded = repository.get(
         ParcelNumber(

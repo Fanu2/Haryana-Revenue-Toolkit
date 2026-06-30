@@ -14,6 +14,9 @@ from hrtk.presentation.village.village_toolbar import VillageToolbar
 from hrtk.presentation.village.village_widget import VillageWidget
 from hrtk.repositories.village_repository import VillageRepository
 from hrtk.services.village_service import VillageService
+from hrtk.application.selection_context import (
+    SelectionContext,
+)
 
 
 def make_service() -> VillageService:
@@ -21,8 +24,15 @@ def make_service() -> VillageService:
     return VillageService(repository)
 
 
+def make_selection() -> SelectionContext:
+    return SelectionContext()
+
+
 def make_widget() -> VillageWidget:
-    return VillageWidget(make_service())
+    return VillageWidget(
+        make_service(),
+        make_selection(),
+    )
 
 
 # ---------------------------------------------------------

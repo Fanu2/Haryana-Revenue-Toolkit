@@ -3,23 +3,7 @@ Haryana Revenue Toolkit (HRTK)
 
 Application Context.
 
-Responsible for bootstrapping the application infrastructure.
-
-Responsibilities
-----------------
-* Create the Workspace.
-* Create the ConfigurationManager.
-* Create the LoggingManager.
-* Create application repositories.
-* Create application services.
-* Create the SelectionContext.
-* Expose shared services.
-
-Non-responsibilities
---------------------
-* GUI
-* Business logic
-* Plugins
+Composition root for the application.
 """
 
 from __future__ import annotations
@@ -27,35 +11,57 @@ from __future__ import annotations
 from pathlib import Path
 
 from hrtk.application.selection_context import SelectionContext
-from hrtk.infrastructure.configuration import ConfigurationManager
-from hrtk.infrastructure.filesystem import Workspace
-from hrtk.infrastructure.logging import LoggingManager
 
-from hrtk.repositories.owner_repository import OwnerRepository
-from hrtk.repositories.village_repository import VillageRepository
+from hrtk.infrastructure.configuration import (
+    ConfigurationManager,
+)
+from hrtk.infrastructure.filesystem import (
+    Workspace,
+)
+from hrtk.infrastructure.logging import (
+    LoggingManager,
+)
 
-from hrtk.services.owner_service import OwnerService
-from hrtk.services.village_service import VillageService
+from hrtk.infrastructure.sqlite.database import (
+    create_database,
+)
 
-from hrtk.repositories.khewat_repository import KhewatRepository
-from hrtk.services.khewat_service import KhewatService
+from hrtk.infrastructure.sqlite.sqlite_village_repository import (
+    SQLiteVillageRepository,
+)
+from hrtk.infrastructure.sqlite.sqlite_owner_repository import (
+    SQLiteOwnerRepository,
+)
+from hrtk.infrastructure.sqlite.sqlite_khewat_repository import (
+    SQLiteKhewatRepository,
+)
+from hrtk.infrastructure.sqlite.sqlite_parcel_repository import (
+    SQLiteParcelRepository,
+)
+
+from hrtk.services.village_service import (
+    VillageService,
+)
+from hrtk.services.owner_service import (
+    OwnerService,
+)
+from hrtk.services.khewat_service import (
+    KhewatService,
+)
+from hrtk.services.parcel_service import (
+    ParcelService,
+)
 
 
 class ApplicationContext:
     """
-    Bootstraps the HRTK application.
+    Composition root of HRTK.
     """
 
     def __init__(
         self,
         workspace: Path | str | None = None,
     ) -> None:
-        """
-        Parameters
-        ----------
-        workspace:
-            Optional workspace root directory.
-        """
 
         #
         # Infrastructure
@@ -64,15 +70,25 @@ class ApplicationContext:
         self._workspace = Workspace(workspace)
 
         self._configuration = ConfigurationManager(
-            self._workspace
+            self._workspace,
         )
 
         self._logging = LoggingManager(
-            self._workspace
+            self._workspace,
         )
 
         #
-        # Application state
+        # Database
+        #
+
+        create_database()
+
+        self._logging.logger.info(
+            "SQLite database initialized."
+        )
+
+        #
+        # Shared application state
         #
 
         self._selection = SelectionContext()
@@ -81,99 +97,133 @@ class ApplicationContext:
         # Repositories
         #
 
-        self._village_repository = VillageRepository()
+        self._village_repository = (
+            SQLiteVillageRepository()
+        )
 
-        self._owner_repository = OwnerRepository()
+        self._owner_repository = (
+            SQLiteOwnerRepository()
+        )
 
-        self.khewat_repository = KhewatRepository()
+        self._khewat_repository = (
+            SQLiteKhewatRepository()
+        )
+
+        self._parcel_repository = (
+            SQLiteParcelRepository()
+        )
 
         #
         # Services
         #
 
         self._village_service = VillageService(
-            self._village_repository
+            self._village_repository,
         )
 
         self._owner_service = OwnerService(
-            self._owner_repository
+            self._owner_repository,
+        )
+
+        self._khewat_service = KhewatService(
+            self._khewat_repository,
+        )
+
+        self._parcel_service = ParcelService(
+            self._parcel_repository,
         )
 
         self._logging.logger.info(
             "ApplicationContext initialized."
         )
 
-        self.khewat_service = KhewatService(
-            self.khewat_repository,
-        )
+    # ---------------------------------------------------------
+    # Infrastructure
+    # ---------------------------------------------------------
 
     @property
     def workspace(self) -> Workspace:
-        """
-        Return the Workspace service.
-        """
         return self._workspace
 
     @property
-    def configuration(self) -> ConfigurationManager:
-        """
-        Return the ConfigurationManager.
-        """
+    def configuration(
+        self,
+    ) -> ConfigurationManager:
         return self._configuration
 
     @property
     def logging(self) -> LoggingManager:
-        """
-        Return the LoggingManager.
-        """
         return self._logging
 
     @property
-    def selection(self) -> SelectionContext:
-        """
-        Return the SelectionContext.
-        """
+    def selection(
+        self,
+    ) -> SelectionContext:
         return self._selection
+
+    # ---------------------------------------------------------
+    # Repositories
+    # ---------------------------------------------------------
 
     @property
     def village_repository(
         self,
-    ) -> VillageRepository:
-        """
-        Return the VillageRepository.
-        """
+    ) -> SQLiteVillageRepository:
         return self._village_repository
+
+    @property
+    def owner_repository(
+        self,
+    ) -> SQLiteOwnerRepository:
+        return self._owner_repository
+
+    @property
+    def khewat_repository(
+        self,
+    ) -> SQLiteKhewatRepository:
+        return self._khewat_repository
+
+    @property
+    def parcel_repository(
+        self,
+    ) -> SQLiteParcelRepository:
+        return self._parcel_repository
+
+    # ---------------------------------------------------------
+    # Services
+    # ---------------------------------------------------------
 
     @property
     def village_service(
         self,
     ) -> VillageService:
-        """
-        Return the VillageService.
-        """
         return self._village_service
-
-    @property
-    def owner_repository(
-        self,
-    ) -> OwnerRepository:
-        """
-        Return the OwnerRepository.
-        """
-        return self._owner_repository
 
     @property
     def owner_service(
         self,
     ) -> OwnerService:
-        """
-        Return the OwnerService.
-        """
         return self._owner_service
+
+    @property
+    def khewat_service(
+        self,
+    ) -> KhewatService:
+        return self._khewat_service
+
+    @property
+    def parcel_service(
+        self,
+    ) -> ParcelService:
+        return self._parcel_service
+
+    # ---------------------------------------------------------
+    # Shutdown
+    # ---------------------------------------------------------
 
     def shutdown(self) -> None:
         """
-        Shutdown all services.
+        Shutdown application services.
         """
 
         self._logging.logger.info(
@@ -182,7 +232,10 @@ class ApplicationContext:
 
         self._logging.shutdown()
 
-    def __repr__(self) -> str:
+    def __repr__(
+        self,
+    ) -> str:
+
         return (
             "ApplicationContext("
             f"workspace={self.workspace.root!s})"

@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from hrtk.domain.owner import Owner
 from hrtk.infrastructure.sqlite.database import (
-    create_database,
+    reset_database,
 )
 from hrtk.infrastructure.sqlite.sqlite_owner_repository import (
     SQLiteOwnerRepository,
@@ -22,7 +22,7 @@ def test_add_and_get_owner() -> None:
     Save and reload an owner.
     """
 
-    create_database()
+    reset_database()
 
     repository = SQLiteOwnerRepository()
 
@@ -43,7 +43,6 @@ def test_add_and_get_owner() -> None:
     loaded = repository.get("OWN001")
 
     assert loaded is not None
-
     assert loaded.owner_code == "OWN001"
     assert loaded.owner_name == "Jasvir Singh"
     assert loaded.father_name == "Gurdev Singh"
@@ -59,7 +58,7 @@ def test_find_by_village() -> None:
     Find owners belonging to a village.
     """
 
-    create_database()
+    reset_database()
 
     repository = SQLiteOwnerRepository()
 
@@ -82,7 +81,7 @@ def test_find_by_village() -> None:
 
     owners = repository.find_by_village(village_id)
 
-    assert len(owners) >= 2
+    assert len(owners) == 2
 
     codes = {owner.owner_code for owner in owners}
 

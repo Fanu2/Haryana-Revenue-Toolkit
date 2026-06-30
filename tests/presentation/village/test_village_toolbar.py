@@ -34,7 +34,7 @@ def test_toolbar_title(qtbot) -> None:
 
     qtbot.addWidget(toolbar)
 
-    assert toolbar.windowTitle() == "Village"
+    assert toolbar.windowTitle() == "Villages"
 
 
 # ---------------------------------------------------------

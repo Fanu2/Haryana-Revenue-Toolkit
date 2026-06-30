@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from hrtk.domain.khewat import Khewat
 from hrtk.infrastructure.sqlite.database import (
-    create_database,
+    reset_database,
 )
 from hrtk.infrastructure.sqlite.sqlite_khewat_repository import (
     SQLiteKhewatRepository,
@@ -19,7 +19,7 @@ from hrtk.infrastructure.sqlite.sqlite_khewat_repository import (
 
 def test_add_and_find_number() -> None:
 
-    create_database()
+    reset_database()
 
     repository = SQLiteKhewatRepository()
 
@@ -51,7 +51,7 @@ def test_add_and_find_number() -> None:
 
 def test_find_by_village() -> None:
 
-    create_database()
+    reset_database()
 
     repository = SQLiteKhewatRepository()
 

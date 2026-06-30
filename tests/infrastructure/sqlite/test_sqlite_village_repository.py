@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from hrtk.domain.village import Village
 from hrtk.infrastructure.sqlite.database import (
-    create_database,
+    reset_database,
 )
 from hrtk.infrastructure.sqlite.sqlite_village_repository import (
     SQLiteVillageRepository,
@@ -20,7 +20,7 @@ def test_add_and_get_village() -> None:
     Save and reload a village.
     """
 
-    create_database()
+    reset_database()
 
     repository = SQLiteVillageRepository()
 
@@ -31,24 +31,14 @@ def test_add_and_get_village() -> None:
         district="Sirsa",
     )
 
-    repository.add(
-        village,
-    )
+    repository.add(village)
 
-    loaded = repository.get(
-        "HR001",
-    )
+    loaded = repository.get("HR001")
 
     assert loaded is not None
-
     assert loaded.code == "HR001"
-
     assert loaded.name == "Taruana"
-
     assert loaded.tehsil == "Kalanwali"
-
     assert loaded.district == "Sirsa"
-
     assert loaded.state == "Haryana"
-
     assert loaded.active
