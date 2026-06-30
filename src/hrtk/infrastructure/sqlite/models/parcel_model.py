@@ -6,12 +6,17 @@ SQLite Parcel Model.
 
 from __future__ import annotations
 
-from sqlalchemy import Boolean
-from sqlalchemy import Integer
-from sqlalchemy import String
+from sqlalchemy import (
+    Boolean,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+)
 
 from hrtk.infrastructure.sqlite.base import Base
 
@@ -23,11 +28,27 @@ class ParcelModel(Base):
 
     __tablename__ = "parcels"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "rectangle",
+            "killa",
+            name="uq_parcel_number",
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # Primary Key
+    # ---------------------------------------------------------
+
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         autoincrement=True,
     )
+
+    # ---------------------------------------------------------
+    # Parcel Number
+    # ---------------------------------------------------------
 
     rectangle: Mapped[int] = mapped_column(
         Integer,
@@ -38,6 +59,10 @@ class ParcelModel(Base):
         String(30),
         nullable=False,
     )
+
+    # ---------------------------------------------------------
+    # Area
+    # ---------------------------------------------------------
 
     kanal: Mapped[int] = mapped_column(
         Integer,
@@ -54,17 +79,24 @@ class ParcelModel(Base):
         nullable=False,
     )
 
+    # ---------------------------------------------------------
+    # Metadata
+    # ---------------------------------------------------------
+
     remarks: Mapped[str] = mapped_column(
         String(500),
+        nullable=False,
         default="",
     )
 
     status: Mapped[str] = mapped_column(
         String(20),
+        nullable=False,
         default="Active",
     )
 
     active: Mapped[bool] = mapped_column(
         Boolean,
+        nullable=False,
         default=True,
     )
