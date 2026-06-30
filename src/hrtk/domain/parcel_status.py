@@ -1,75 +1,30 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Parcel Entity.
+Parcel Status.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
-from hrtk.domain.value_objects.area import Area
-from hrtk.domain.value_objects.parcel_number import ParcelNumber
+from enum import Enum
 
 
-@dataclass(
-    slots=True,
-)
-class Parcel:
+class ParcelStatus(str, Enum):
     """
-    Represents a physical parcel of land.
-
-    A Parcel represents land only.
-
-    Ownership, Khewat and Mutation
-    relationships are maintained separately.
+    Lifecycle states of a parcel.
     """
 
-    number: ParcelNumber
+    ACTIVE = "Active"
 
-    area: Area
+    HISTORICAL = "Historical"
 
-    remarks: str = field(
-        default="",
-    )
+    MERGED = "Merged"
 
-    @property
-    def is_empty(self) -> bool:
-        """
-        Return True if the parcel has zero area.
-        """
+    CANCELLED = "Cancelled"
 
-        return (
-            self.area.total_sarsai == 0
-        )
+    CORRECTED = "Corrected"
 
-    def display(self) -> str:
-        """
-        Human-readable description.
-        """
-
-        return (
-            f"{self.number} "
-            f"({self.area.display()})"
-        )
+    UNKNOWN = "Unknown"
 
     def __str__(self) -> str:
-        """
-        Compact representation.
-        """
-
-        return (
-            f"{self.number}"
-        )
-
-    def __repr__(self) -> str:
-        """
-        Developer representation.
-        """
-
-        return (
-            "Parcel("
-            f"{self.number}, "
-            f"{self.area}"
-            ")"
-        )
+        return self.value
