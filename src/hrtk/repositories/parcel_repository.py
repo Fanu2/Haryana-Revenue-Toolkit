@@ -16,28 +16,46 @@ from hrtk.domain.value_objects.parcel_number import (
 
 class ParcelRepository(Protocol):
     """
-    Repository interface for Parcel entities.
+    Repository contract for Parcel entities.
     """
 
-    def save(
+    def add(
         self,
         parcel: Parcel,
     ) -> None:
         """
-        Save a parcel.
+        Add a new parcel.
         """
         ...
 
-    def find_by_number(
+    def update(
+        self,
+        parcel: Parcel,
+    ) -> None:
+        """
+        Update an existing parcel.
+        """
+        ...
+
+    def remove(
+        self,
+        number: ParcelNumber,
+    ) -> None:
+        """
+        Remove a parcel.
+        """
+        ...
+
+    def get(
         self,
         number: ParcelNumber,
     ) -> Parcel | None:
         """
-        Find a parcel by its number.
+        Return a parcel by number.
         """
         ...
 
-    def find_all(
+    def list(
         self,
     ) -> list[Parcel]:
         """
@@ -50,15 +68,6 @@ class ParcelRepository(Protocol):
         number: ParcelNumber,
     ) -> bool:
         """
-        Return True if the parcel exists.
-        """
-        ...
-
-    def delete(
-        self,
-        number: ParcelNumber,
-    ) -> None:
-        """
-        Delete a parcel.
+        Determine whether a parcel exists.
         """
         ...
