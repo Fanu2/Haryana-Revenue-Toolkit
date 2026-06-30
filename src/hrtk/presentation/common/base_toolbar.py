@@ -6,6 +6,10 @@ Base Toolbar.
 
 from __future__ import annotations
 
+# ==========================================================
+# Qt
+# ==========================================================
+
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
@@ -33,9 +37,12 @@ class BaseToolbar(QToolBar):
     ) -> None:
         super().__init__(title)
 
-        self._title = title
-
         self._create_actions()
+
+        #
+        # Hook for derived classes.
+        #
+        self._create_custom_actions()
 
         self._create_search(
             search_placeholder,
@@ -44,6 +51,10 @@ class BaseToolbar(QToolBar):
         self.enable_selection_actions(
             False,
         )
+
+    # ---------------------------------------------------------
+    # Public API
+    # ---------------------------------------------------------
 
     @property
     def search_text(self) -> str:
@@ -61,41 +72,46 @@ class BaseToolbar(QToolBar):
         """
 
         self._edit_action.setEnabled(enabled)
-
         self._deactivate_action.setEnabled(enabled)
 
     def clear_search(self) -> None:
         """
-        Clear search text.
+        Clear search box.
         """
 
         self._search.clear()
 
+    # ---------------------------------------------------------
+    # Extension Hook
+    # ---------------------------------------------------------
+
+    def _create_custom_actions(self) -> None:
+        """
+        Override in derived toolbars to add
+        module-specific actions.
+        """
+
+        pass
+
+    # ---------------------------------------------------------
+    # Internal
+    # ---------------------------------------------------------
+
     def _create_actions(self) -> None:
         """
-        Create toolbar actions.
+        Create standard toolbar actions.
         """
 
-        self._add_action = QAction(
-            "Add",
-            self,
-        )
-
-        self._edit_action = QAction(
-            "Edit",
-            self,
-        )
-
+        self._add_action = QAction("Add", self)
+        self._edit_action = QAction("Edit", self)
         self._deactivate_action = QAction(
             "Deactivate",
             self,
         )
-
         self._refresh_action = QAction(
             "Refresh",
             self,
         )
-
         self._export_action = QAction(
             "Export",
             self,
@@ -121,27 +137,14 @@ class BaseToolbar(QToolBar):
             self.export_requested.emit,
         )
 
-        self.addAction(
-            self._add_action,
-        )
-
-        self.addAction(
-            self._edit_action,
-        )
-
-        self.addAction(
-            self._deactivate_action,
-        )
+        self.addAction(self._add_action)
+        self.addAction(self._edit_action)
+        self.addAction(self._deactivate_action)
 
         self.addSeparator()
 
-        self.addAction(
-            self._refresh_action,
-        )
-
-        self.addAction(
-            self._export_action,
-        )
+        self.addAction(self._refresh_action)
+        self.addAction(self._export_action)
 
     def _create_search(
         self,
@@ -153,9 +156,7 @@ class BaseToolbar(QToolBar):
 
         self.addSeparator()
 
-        self._search = QLineEdit(
-            self,
-        )
+        self._search = QLineEdit(self)
 
         self._search.setPlaceholderText(
             placeholder,
