@@ -25,6 +25,14 @@ from hrtk.presentation.khewat.khewat_toolbar import KhewatToolbar
 
 from hrtk.services.khewat_service import KhewatService
 
+from hrtk.services.export_service import (
+    ExportService,
+)
+
+from hrtk.services.export_service import (
+    ExportService,
+)
+
 
 class KhewatWidget(QWidget):
     """
@@ -102,12 +110,20 @@ class KhewatWidget(QWidget):
             self._refresh
         )
 
+        self._toolbar.export_requested.connect(
+            self._export_excel
+        )
+
         self._selection.village_changed.connect(
             self._village_changed
         )
         
         self._toolbar.search_text_changed.connect(
             self._search,
+        )
+
+        self._toolbar.export_requested.connect(
+        self._export_excel,
         )
 
     def _village_changed(
@@ -239,6 +255,62 @@ class KhewatWidget(QWidget):
         self._model.refresh()
 
         self._toolbar.clear_search()
+
+    def _export_excel(
+        self,
+    ) -> None:
+        """
+        Export khewats to Excel.
+        """
+
+        rows = [
+            (
+                khewat.khewat_no,
+                khewat.khewat_type,
+                "Active" if khewat.active else "Inactive",
+            )
+            for khewat in self._model.khewats
+        ]
+
+        ExportService.export_excel(
+            parent=self,
+            title="Export Khewats",
+            default_filename="khewats.xlsx",
+            sheet_name="Khewats",
+            headers=list(
+                KhewatModel.HEADERS,
+            ),
+            rows=rows,
+        )
+
+
+    def _export_excel(
+        self,
+    ) -> None:
+        """
+        Export khewats to Excel.
+        """
+
+        rows = [
+            (
+                khewat.khewat_no,
+                khewat.old_khewat_no,
+                khewat.jamabandi_year,
+                "Active" if khewat.active else "Inactive",
+            )
+            for khewat in self._model.khewats
+        ]
+
+        ExportService.export_excel(
+            parent=self,
+            title="Export Khewats",
+            default_filename="khewats.xlsx",
+            sheet_name="Khewats",
+            headers=list(
+                KhewatModel.HEADERS,
+            ),
+            rows=rows,
+        )
 
     def _search(
         self,

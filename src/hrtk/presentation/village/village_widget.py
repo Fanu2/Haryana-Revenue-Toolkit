@@ -27,6 +27,14 @@ from hrtk.presentation.common.message_service import (
     MessageService,
 )
 
+from hrtk.services.export_service import (
+    ExportService,
+)
+
+from hrtk.presentation.common.message_service import (
+    MessageService,
+)
+
     
 
 
@@ -126,6 +134,11 @@ class VillageWidget(QWidget):
             self._select_village
         )
 
+        self._toolbar.export_requested.connect(
+        self._export_excel,
+        )
+
+
     def _add_village(self) -> None:
         """
         Add a new village.
@@ -213,6 +226,36 @@ class VillageWidget(QWidget):
         """
 
         self._model.refresh()
+
+    def _export_excel(
+        self,
+    ) -> None:
+        """
+        Export villages to Excel.
+        """
+
+        rows = [
+            (
+                village.code,
+                village.name,
+                village.tehsil,
+                village.district,
+                village.state,
+                "Active" if village.active else "Inactive",
+            )
+            for village in self._model.villages
+        ]
+
+        ExportService.export_excel(
+            parent=self,
+            title="Export Villages",
+            default_filename="villages.xlsx",
+            sheet_name="Villages",
+            headers=list(
+                VillageModel.HEADERS,
+            ),
+            rows=rows,
+        )
 
     def _search(
         self,

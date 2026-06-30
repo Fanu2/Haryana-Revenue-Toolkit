@@ -27,6 +27,10 @@ from hrtk.presentation.common.message_service import (
     MessageService,
 )
 
+from hrtk.services.export_service import (
+    ExportService,
+)
+
 
 class OwnerWidget(QWidget):
     """
@@ -118,6 +122,10 @@ class OwnerWidget(QWidget):
 
         self._toolbar.refresh_requested.connect(
             self._refresh
+        )
+
+        self._toolbar.export_requested.connect(
+        self._export_excel
         )
 
         self._toolbar.search_text_changed.connect(
@@ -261,6 +269,36 @@ class OwnerWidget(QWidget):
             False,
         )
 
+    def _export_excel(
+        self,
+    ) -> None:
+        """
+        Export owners to Excel.
+        """
+
+        rows = [
+            (
+                owner.owner_code,
+                owner.owner_name,
+                owner.father_name,
+                owner.mobile,
+                "Active" if owner.active else "Inactive",
+            )
+            for owner in self._model.owners
+        ]
+
+        ExportService.export_excel(
+            parent=self,
+            title="Export Owners",
+            default_filename="owners.xlsx",
+            sheet_name="Owners",
+            headers=list(
+                OwnerModel.HEADERS,
+            ),
+            rows=rows,
+        )
+
+
     def _search(
         self,
         text: str,
@@ -283,4 +321,4 @@ class OwnerWidget(QWidget):
         self._model.refresh()
         self._toolbar.clear_search()
 
-        self._toolbar.clear_search()
+     

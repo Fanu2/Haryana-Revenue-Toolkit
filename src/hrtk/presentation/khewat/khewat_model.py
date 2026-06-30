@@ -49,6 +49,16 @@ class KhewatModel(QAbstractTableModel):
         Return the service.
         """
         return self._service
+    
+    @property
+    def khewats(self) -> list[Khewat]:
+        """
+        Return all loaded khewats.
+        """
+
+        return list(
+            self._khewats,
+        )
 
     def set_current_village(
         self,

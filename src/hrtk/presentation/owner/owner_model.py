@@ -53,6 +53,16 @@ class OwnerModel(QAbstractTableModel):
         """
         return self._service
     
+    @property
+    def owners(self) -> list[Owner]:
+        """
+        Return all loaded owners.
+        """
+
+        return list(
+            self._owners,
+        )
+    
     def set_filter(
         self,
         text: str,
