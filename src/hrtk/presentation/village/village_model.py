@@ -56,6 +56,16 @@ class VillageModel(QAbstractTableModel):
         Return the village service.
         """
         return self._service
+    
+    @property
+    def villages(self) -> list[Village]:
+        """
+        Return a copy of all villages.
+        """
+
+        return list(
+            self._villages,
+        )
 
     def refresh(self) -> None:
         """

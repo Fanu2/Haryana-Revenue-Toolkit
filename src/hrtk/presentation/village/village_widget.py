@@ -23,6 +23,9 @@ from hrtk.services.village_service import VillageService
 from hrtk.presentation.common.search_proxy_model import (
     SearchProxyModel,
 )
+from hrtk.presentation.common.message_service import (
+    MessageService,
+)
 
     
 
@@ -184,19 +187,15 @@ class VillageWidget(QWidget):
         if village is None:
             return
 
-        reply = QMessageBox.question(
-            self,
-            "Deactivate Village",
-            (
-             f"Deactivate village "
-                f"'{village.display_name}'?"
-            ),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
-
-        if reply != QMessageBox.Yes:
-            return
+        if not MessageService.confirm(
+        self,
+        "Deactivate Village",
+        (
+            f"Deactivate village "
+            f"'{village.display_name}'?"
+        ),
+    ):
+         return
 
         village.deactivate()
 

@@ -19,9 +19,12 @@ from hrtk.presentation.owner.owner_model import OwnerModel
 from hrtk.presentation.owner.owner_table import OwnerTable
 from hrtk.presentation.owner.owner_toolbar import OwnerToolbar
 from hrtk.services.owner_service import OwnerService
-from PySide6.QtWidgets import QMessageBox
+
 from hrtk.presentation.common.search_proxy_model import (
     SearchProxyModel,
+)
+from hrtk.presentation.common.message_service import (
+    MessageService,
 )
 
 
@@ -54,7 +57,7 @@ class OwnerWidget(QWidget):
         self._toolbar = OwnerToolbar()
 
         self._table = OwnerTable(
-        self._proxy,
+            self._proxy,
         )
 
         self._current_village: Village | None = None
@@ -118,7 +121,7 @@ class OwnerWidget(QWidget):
         )
 
         self._toolbar.search_text_changed.connect(
-        self._search
+            self._search
         )
 
         self._selection.village_changed.connect(
@@ -134,6 +137,7 @@ class OwnerWidget(QWidget):
         """
 
         self._current_village = village
+        self._toolbar.clear_search()
 
         if village is None:
 
@@ -155,7 +159,7 @@ class OwnerWidget(QWidget):
         print("Current village:", self._current_village)
         if self._current_village is None:
 
-            QMessageBox.warning(
+            MessageService.warning(
                 self,
                 "No Village Selected",
                 "Please select a village before adding an owner.",
@@ -178,9 +182,18 @@ class OwnerWidget(QWidget):
 
         self._model.refresh()
 
+        self._toolbar.clear_search()
+
+        MessageService.success(
+            self,
+            "Owner created successfully.",
+        )
+
         self._toolbar.enable_selection_actions(
             True,
         )
+
+
     def _edit_owner(self) -> None:
         """
         Edit the selected owner.
@@ -200,9 +213,18 @@ class OwnerWidget(QWidget):
         if not dialog.exec():
             return
 
-        dialog.update_owner(owner)
+        dialog.update_owner(
+        owner,
+        )
 
         self._model.refresh()
+
+        self._toolbar.clear_search()
+
+        MessageService.success(
+            self,
+            "Owner updated successfully.",
+        )
    
 
     def _deactivate_owner(self) -> None:
@@ -215,11 +237,25 @@ class OwnerWidget(QWidget):
         if owner is None:
             return
 
+        if not MessageService.confirm(
+            self,
+            "Deactivate Owner",
+            f"Deactivate owner '{owner.display_name}'?",
+        )       :
+            return
+
         self._service.deactivate(
             owner,
         )
 
         self._model.refresh()
+
+        self._toolbar.clear_search()
+
+        MessageService.success(
+            self,
+            "Owner deactivated successfully.",
+        )
 
         self._toolbar.enable_selection_actions(
             False,
@@ -237,9 +273,14 @@ class OwnerWidget(QWidget):
             text,
         )
 
-    def _refresh(self) -> None:
+    def _refresh(
+        self,
+    ) -> None:
         """
         Refresh the owner list.
         """
 
         self._model.refresh()
+        self._toolbar.clear_search()
+
+        self._toolbar.clear_search()
