@@ -6,18 +6,22 @@ Khewat Table.
 
 from __future__ import annotations
 
+# ==========================================================
+# Qt
+# ==========================================================
+
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QHeaderView,
-    QTableView,
-)
+
+# ==========================================================
+# HRTK
+# ==========================================================
 
 from hrtk.domain.khewat import Khewat
+from hrtk.presentation.common.base_table import BaseTable
 from hrtk.presentation.khewat.khewat_model import KhewatModel
 
 
-class KhewatTable(QTableView):
+class KhewatTable(BaseTable):
     """
     Table view for Khewat entities.
     """
@@ -32,11 +36,6 @@ class KhewatTable(QTableView):
 
         self.setModel(model)
 
-        self._configure()
-
-        #
-        # Single click selects a Khewat.
-        #
         self.clicked.connect(
             self._on_clicked,
         )
@@ -72,39 +71,6 @@ class KhewatTable(QTableView):
             indexes[0].row(),
         )
 
-    def _configure(self) -> None:
-        """
-        Configure the table.
-        """
-
-        self.setAlternatingRowColors(True)
-
-        self.setSortingEnabled(True)
-
-        self.setSelectionBehavior(
-            QAbstractItemView.SelectRows,
-        )
-
-        self.setSelectionMode(
-            QAbstractItemView.SingleSelection,
-        )
-
-        self.setEditTriggers(
-            QAbstractItemView.NoEditTriggers,
-        )
-
-        self.setWordWrap(False)
-
-        self.verticalHeader().hide()
-
-        header = self.horizontalHeader()
-
-        header.setStretchLastSection(True)
-
-        header.setSectionResizeMode(
-            QHeaderView.ResizeToContents,
-        )
-
     def _on_clicked(
         self,
         index,
@@ -118,6 +84,7 @@ class KhewatTable(QTableView):
         )
 
         if khewat is not None:
+
             self.khewat_activated.emit(
                 khewat,
             )

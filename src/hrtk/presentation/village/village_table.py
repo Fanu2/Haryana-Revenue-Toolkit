@@ -6,18 +6,22 @@ Village Table.
 
 from __future__ import annotations
 
+# ==========================================================
+# Qt
+# ==========================================================
+
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QHeaderView,
-    QTableView,
-)
+
+# ==========================================================
+# HRTK
+# ==========================================================
 
 from hrtk.domain.village import Village
+from hrtk.presentation.common.base_table import BaseTable
 from hrtk.presentation.village.village_model import VillageModel
 
 
-class VillageTable(QTableView):
+class VillageTable(BaseTable):
     """
     Table view for Village entities.
     """
@@ -32,11 +36,6 @@ class VillageTable(QTableView):
 
         self.setModel(model)
 
-        self._configure()
-
-        #
-        # Single-click selects the village.
-        #
         self.clicked.connect(
             self._on_clicked,
         )
@@ -46,6 +45,7 @@ class VillageTable(QTableView):
         """
         Return the village model.
         """
+
         model = self.model()
 
         assert isinstance(
@@ -71,39 +71,6 @@ class VillageTable(QTableView):
             indexes[0].row(),
         )
 
-    def _configure(self) -> None:
-        """
-        Configure the table.
-        """
-
-        self.setAlternatingRowColors(True)
-
-        self.setSortingEnabled(True)
-
-        self.setSelectionBehavior(
-            QAbstractItemView.SelectRows,
-        )
-
-        self.setSelectionMode(
-            QAbstractItemView.SingleSelection,
-        )
-
-        self.setEditTriggers(
-            QAbstractItemView.NoEditTriggers,
-        )
-
-        self.setWordWrap(False)
-
-        self.verticalHeader().hide()
-
-        header = self.horizontalHeader()
-
-        header.setStretchLastSection(True)
-
-        header.setSectionResizeMode(
-            QHeaderView.ResizeToContents,
-        )
-
     def _on_clicked(
         self,
         index,
@@ -117,6 +84,7 @@ class VillageTable(QTableView):
         )
 
         if village is not None:
+
             self.village_activated.emit(
                 village,
             )
