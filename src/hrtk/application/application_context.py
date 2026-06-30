@@ -37,6 +37,9 @@ from hrtk.repositories.village_repository import VillageRepository
 from hrtk.services.owner_service import OwnerService
 from hrtk.services.village_service import VillageService
 
+from hrtk.repositories.khewat_repository import KhewatRepository
+from hrtk.services.khewat_service import KhewatService
+
 
 class ApplicationContext:
     """
@@ -82,6 +85,8 @@ class ApplicationContext:
 
         self._owner_repository = OwnerRepository()
 
+        self.khewat_repository = KhewatRepository()
+
         #
         # Services
         #
@@ -96,6 +101,10 @@ class ApplicationContext:
 
         self._logging.logger.info(
             "ApplicationContext initialized."
+        )
+
+        self.khewat_service = KhewatService(
+            self.khewat_repository,
         )
 
     @property
