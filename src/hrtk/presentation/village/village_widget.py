@@ -20,6 +20,9 @@ from hrtk.presentation.village.village_model import VillageModel
 from hrtk.presentation.village.village_table import VillageTable
 from hrtk.presentation.village.village_toolbar import VillageToolbar
 from hrtk.services.village_service import VillageService
+from hrtk.presentation.common.search_proxy_model import (
+    SearchProxyModel,
+)
 
     
 
@@ -40,8 +43,18 @@ class VillageWidget(QWidget):
         self._selection = selection
 
         self._model = VillageModel(service)
+
+        self._proxy = SearchProxyModel()
+
+        self._proxy.setSourceModel(
+            self._model,
+        )
+
         self._toolbar = VillageToolbar()
-        self._table = VillageTable(self._model)
+
+        self._table = VillageTable(
+            self._proxy,
+        )
 
         self._current_village: Village | None = None
 
@@ -193,7 +206,9 @@ class VillageWidget(QWidget):
 
         self._model.refresh()
 
-    def _refresh(self) -> None:
+    def _refresh(
+        self,
+    ) -> None:
         """
         Refresh the village list.
         """
@@ -206,12 +221,11 @@ class VillageWidget(QWidget):
     ) -> None:
         """
         Filter villages.
-
-        Search support will be added using a
-        QSortFilterProxyModel.
         """
 
-        _ = text
+        self._proxy.set_search_text(
+            text,
+        )
 
     def _select_village(
         self,

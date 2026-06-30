@@ -20,6 +20,9 @@ from hrtk.presentation.owner.owner_table import OwnerTable
 from hrtk.presentation.owner.owner_toolbar import OwnerToolbar
 from hrtk.services.owner_service import OwnerService
 from PySide6.QtWidgets import QMessageBox
+from hrtk.presentation.common.search_proxy_model import (
+    SearchProxyModel,
+)
 
 
 class OwnerWidget(QWidget):
@@ -38,8 +41,21 @@ class OwnerWidget(QWidget):
         self._selection = selection
         print("OwnerWidget SelectionContext id:", id(self._selection))
         self._model = OwnerModel(service)
+
+        #
+        # Search Proxy
+        #
+        self._proxy = SearchProxyModel()
+
+        self._proxy.setSourceModel(
+            self._model,
+        )
+
         self._toolbar = OwnerToolbar()
-        self._table = OwnerTable(self._model)
+
+        self._table = OwnerTable(
+        self._proxy,
+        )
 
         self._current_village: Village | None = None
 
@@ -212,12 +228,12 @@ class OwnerWidget(QWidget):
     def _search(
         self,
         text: str,
-        ) -> None:
+    ) -> None:
         """
-        Filter the owner list.
+        Filter owners.
         """
 
-        self._model.set_filter(
+        self._proxy.set_search_text(
             text,
         )
 

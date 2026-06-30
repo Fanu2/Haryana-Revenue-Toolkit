@@ -3,23 +3,26 @@ Haryana Revenue Toolkit (HRTK)
 
 Khewat Widget.
 """
-
-from __future__ import annotations
-
 from PySide6.QtWidgets import (
     QMessageBox,
     QVBoxLayout,
     QWidget,
 )
-
 from hrtk.application.selection_context import SelectionContext
+
 from hrtk.domain.khewat import Khewat
 from hrtk.domain.village import Village
+
 from hrtk.presentation.common.form_mode import FormMode
+from hrtk.presentation.common.search_proxy_model import (
+    SearchProxyModel,
+)
+
 from hrtk.presentation.khewat.khewat_dialog import KhewatDialog
 from hrtk.presentation.khewat.khewat_model import KhewatModel
 from hrtk.presentation.khewat.khewat_table import KhewatTable
 from hrtk.presentation.khewat.khewat_toolbar import KhewatToolbar
+
 from hrtk.services.khewat_service import KhewatService
 
 
@@ -39,8 +42,21 @@ class KhewatWidget(QWidget):
         self._selection = selection
 
         self._model = KhewatModel(service)
+
+        #
+        # Search Proxy
+        #
+        self._proxy = SearchProxyModel()
+
+        self._proxy.setSourceModel(
+            self._model,
+        )
+
         self._toolbar = KhewatToolbar()
-        self._table = KhewatTable(self._model)
+
+        self._table = KhewatTable(
+            self._proxy,
+        )
 
         self._build_ui()
         self._connect_signals()
@@ -89,6 +105,10 @@ class KhewatWidget(QWidget):
         self._selection.village_changed.connect(
             self._village_changed
         )
+        
+        self._toolbar.search_text_changed.connect(
+            self._search,
+        )
 
     def _village_changed(
         self,
@@ -97,6 +117,8 @@ class KhewatWidget(QWidget):
         """
         Reload Khewats when village changes.
         """
+
+        self._toolbar.clear_search()
 
         if village is None:
 
@@ -109,6 +131,7 @@ class KhewatWidget(QWidget):
             self._model.set_current_village(
                 village.id
             )
+        
 
     def _add_khewat(self) -> None:
         """
@@ -142,6 +165,9 @@ class KhewatWidget(QWidget):
 
         self._model.refresh()
 
+
+        self._toolbar.clear_search()
+
     def _edit_khewat(self) -> None:
         """
         Edit selected Khewat.
@@ -173,6 +199,8 @@ class KhewatWidget(QWidget):
 
         self._model.refresh()
 
+        self._toolbar.clear_search()
+
     def _deactivate_khewat(self) -> None:
         """
         Deactivate selected Khewat.
@@ -200,9 +228,26 @@ class KhewatWidget(QWidget):
 
         self._model.refresh()
 
+        self._model.refresh()
+        self._toolbar.clear_search()
+
     def _refresh(self) -> None:
         """
         Refresh the Khewat list.
         """
 
         self._model.refresh()
+
+        self._toolbar.clear_search()
+
+    def _search(
+        self,
+        text: str,
+    ) -> None:
+        """
+        Filter khewats.
+        """
+
+        self._proxy.set_search_text(
+            text,
+        )
