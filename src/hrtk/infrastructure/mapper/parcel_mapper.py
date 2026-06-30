@@ -7,29 +7,56 @@ Parcel Mapper.
 from __future__ import annotations
 
 from hrtk.domain.parcel import Parcel
+from hrtk.domain.value_objects.area import Area
+from hrtk.domain.value_objects.parcel_number import (
+    ParcelNumber,
+)
+from hrtk.infrastructure.sqlite.models.parcel_model import (
+    ParcelModel,
+)
 
 
 class ParcelMapper:
     """
-    Converts between persistence models
-    and Parcel domain objects.
-
-    SQLite implementation will be added
-    in the next sprint.
+    Converts between ParcelModel
+    and Parcel.
     """
 
     @staticmethod
-    def to_domain(model) -> Parcel:
+    def to_domain(
+        model: ParcelModel,
+    ) -> Parcel:
         """
-        Convert a persistence model to a
-        Parcel domain object.
+        Convert SQLite model to domain.
         """
-        raise NotImplementedError
+
+        return Parcel(
+            number=ParcelNumber(
+                rectangle=model.rectangle,
+                killa=model.killa,
+            ),
+            area=Area.from_kms(
+                kanal=model.kanal,
+                marla=model.marla,
+                sarsai=model.sarsai,
+            ),
+            remarks=model.remarks,
+        )
 
     @staticmethod
-    def to_model(parcel: Parcel):
+    def to_model(
+        parcel: Parcel,
+    ) -> ParcelModel:
         """
-        Convert a Parcel domain object to
-        a persistence model.
+        Convert domain object
+        to SQLite model.
         """
-        raise NotImplementedError
+
+        return ParcelModel(
+            rectangle=parcel.number.rectangle,
+            killa=parcel.number.killa,
+            kanal=parcel.area.kanal,
+            marla=parcel.area.marla,
+            sarsai=parcel.area.sarsai,
+            remarks=parcel.remarks,
+        )
