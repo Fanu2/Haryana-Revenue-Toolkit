@@ -43,10 +43,10 @@ class VillageTable(BaseTable):
     @property
     def village_model(self) -> VillageModel:
         """
-        Return the village model.
+        Return the source village model.
         """
 
-        model = self.model()
+        model = self.source_model()
 
         assert isinstance(
             model,
@@ -62,13 +62,13 @@ class VillageTable(BaseTable):
         Return the selected village.
         """
 
-        indexes = self.selectionModel().selectedRows()
+        row = self.selected_source_row()
 
-        if not indexes:
+        if row is None:
             return None
 
         return self.village_model.village(
-            indexes[0].row(),
+            row,
         )
 
     def _on_clicked(
@@ -79,8 +79,12 @@ class VillageTable(BaseTable):
         Handle row selection.
         """
 
+        source_index = self.map_to_source(
+            index,
+        )
+
         village = self.village_model.village(
-            index.row(),
+            source_index.row(),
         )
 
         if village is not None:

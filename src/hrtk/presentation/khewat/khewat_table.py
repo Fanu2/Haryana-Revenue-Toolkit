@@ -43,10 +43,10 @@ class KhewatTable(BaseTable):
     @property
     def khewat_model(self) -> KhewatModel:
         """
-        Return the Khewat model.
+        Return the source Khewat model.
         """
 
-        model = self.model()
+        model = self.source_model()
 
         assert isinstance(
             model,
@@ -62,13 +62,13 @@ class KhewatTable(BaseTable):
         Return the selected Khewat.
         """
 
-        indexes = self.selectionModel().selectedRows()
+        row = self.selected_source_row()
 
-        if not indexes:
+        if row is None:
             return None
 
         return self.khewat_model.khewat(
-            indexes[0].row(),
+            row,
         )
 
     def _on_clicked(
@@ -79,8 +79,12 @@ class KhewatTable(BaseTable):
         Handle row selection.
         """
 
+        source_index = self.map_to_source(
+            index,
+        )
+
         khewat = self.khewat_model.khewat(
-            index.row(),
+            source_index.row(),
         )
 
         if khewat is not None:

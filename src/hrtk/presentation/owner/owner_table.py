@@ -6,18 +6,22 @@ Owner Table.
 
 from __future__ import annotations
 
+# ==========================================================
+# Qt
+# ==========================================================
+
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QHeaderView,
-    QTableView,
-)
+
+# ==========================================================
+# HRTK
+# ==========================================================
 
 from hrtk.domain.owner import Owner
+from hrtk.presentation.common.base_table import BaseTable
 from hrtk.presentation.owner.owner_model import OwnerModel
 
 
-class OwnerTable(QTableView):
+class OwnerTable(BaseTable):
     """
     Table view for Owner entities.
     """
@@ -32,19 +36,23 @@ class OwnerTable(QTableView):
 
         self.setModel(model)
 
-        self._configure()
-
-        self.doubleClicked.connect(
-            self._on_double_clicked
+        self.clicked.connect(
+            self._on_clicked,
         )
 
     @property
     def owner_model(self) -> OwnerModel:
         """
-        Return the owner model.
+        Return the source owner model.
         """
-        model = self.model()
-        assert isinstance(model, OwnerModel)
+
+        model = self.source_model()
+
+        assert isinstance(
+            model,
+            OwnerModel,
+        )
+
         return model
 
     def selected_owner(
@@ -53,61 +61,34 @@ class OwnerTable(QTableView):
         """
         Return the selected owner.
         """
-        indexes = self.selectionModel().selectedRows()
 
-        if not indexes:
+        row = self.selected_source_row()
+
+        if row is None:
             return None
 
         return self.owner_model.owner(
-            indexes[0].row()
+            row,
         )
 
-    def _configure(self) -> None:
-        """
-        Configure the table.
-        """
-
-        self.setAlternatingRowColors(True)
-
-        self.setSortingEnabled(True)
-
-        self.setSelectionBehavior(
-            QAbstractItemView.SelectRows
-        )
-
-        self.setSelectionMode(
-            QAbstractItemView.SingleSelection
-        )
-
-        self.setEditTriggers(
-            QAbstractItemView.NoEditTriggers
-        )
-
-        self.setWordWrap(False)
-
-        self.verticalHeader().hide()
-
-        header = self.horizontalHeader()
-
-        header.setStretchLastSection(True)
-
-        header.setSectionResizeMode(
-            QHeaderView.ResizeToContents
-        )
-
-    def _on_double_clicked(
+    def _on_clicked(
         self,
         index,
-        ) -> None:
+    ) -> None:
         """
-        Handle double-click.
+        Handle row selection.
         """
 
+        source_index = self.map_to_source(
+            index,
+        )
+
         owner = self.owner_model.owner(
-            index.row()
+            source_index.row(),
         )
 
         if owner is not None:
+
             self.owner_activated.emit(
-                owner
+                owner,
             )
