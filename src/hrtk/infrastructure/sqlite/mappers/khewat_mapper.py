@@ -25,6 +25,7 @@ class KhewatMapper:
     ) -> KhewatModel:
 
         return KhewatModel(
+            id=str(khewat.id),
             village_id=str(khewat.village_id),
             khewat_no=khewat.khewat_no,
             old_khewat_no=khewat.old_khewat_no,
@@ -39,6 +40,7 @@ class KhewatMapper:
     ) -> Khewat:
 
         return Khewat(
+            id=UUID(model.id),
             village_id=UUID(model.village_id),
             khewat_no=model.khewat_no,
             old_khewat_no=model.old_khewat_no,

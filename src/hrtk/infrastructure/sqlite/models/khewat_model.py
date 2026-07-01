@@ -6,9 +6,10 @@ SQLite Khewat Model.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from sqlalchemy import (
     Boolean,
-    Integer,
     String,
     UniqueConstraint,
 )
@@ -40,10 +41,10 @@ class KhewatModel(Base):
     # Primary Key
     # ---------------------------------------------------------
 
-    id: Mapped[int] = mapped_column(
-        Integer,
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        autoincrement=True,
+        default=lambda: str(uuid4()),
     )
 
     # ---------------------------------------------------------
