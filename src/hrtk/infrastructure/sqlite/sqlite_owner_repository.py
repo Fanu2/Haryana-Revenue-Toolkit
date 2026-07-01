@@ -131,6 +131,16 @@ class SQLiteOwnerRepository(OwnerRepository):
                 OwnerMapper.to_domain(model)
                 for model in models
             ]
+        
+    def all(
+        self,
+    ) -> list[Owner]:
+        """
+        Return all owners.
+
+        Compatibility method for BaseService.
+        """
+        return self.list()
 
     def exists(
         self,

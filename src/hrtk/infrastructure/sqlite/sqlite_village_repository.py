@@ -165,3 +165,12 @@ class SQLiteVillageRepository(VillageRepository):
         return self.get(
             code,
         )
+    
+    
+    def all(self) -> list[Village]:
+        """
+        Return all villages.
+
+        Compatibility method for BaseService.
+        """
+        return self.list()
