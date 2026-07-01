@@ -5,6 +5,7 @@ Khasra Widget.
 """
 
 from __future__ import annotations
+from tkinter import dialog
 
 from PySide6.QtWidgets import (
     QVBoxLayout,
@@ -90,6 +91,18 @@ class KhasraWidget(QWidget):
             self._search,
         )
 
+        self._toolbar.edit_requested.connect(
+            self._edit_parcel,
+        )
+
+        self._toolbar.delete_requested.connect(
+            self._delete_parcel,
+        )
+
+        self._table.selectionModel().selectionChanged.connect(
+            self._selection_changed,
+        )
+
     def _add_parcel(
         self,
     ) -> None:
@@ -135,5 +148,51 @@ class KhasraWidget(QWidget):
         """
 
         del text
+
+        self._model.refresh()
+
+    def _selection_changed(self) -> None:
+        """
+        Enable toolbar buttons according to selection.
+        """
+
+        self._toolbar.enable_selection_actions(
+            self._table.selected_parcel() is not None,
+        )      
+
+    def _edit_parcel(self) -> None:
+        """
+        Edit selected parcel.
+        """
+
+        parcel = self._table.selected_parcel()
+
+        if parcel is None:
+            return
+
+        dialog = KhasraDialog(self)
+
+        dialog.set_parcel(parcel)
+
+        if not dialog.exec():
+            return
+
+        dialog.update_parcel(parcel)
+
+        self._service.update(parcel)
+
+        self._model.refresh()
+
+    def _delete_parcel(self) -> None:
+        """
+        Delete selected parcel.
+        """
+
+        parcel = self._table.selected_parcel()
+
+        if parcel is None:
+            return
+
+        self._service.delete(parcel.id)
 
         self._model.refresh()

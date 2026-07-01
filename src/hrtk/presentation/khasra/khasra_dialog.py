@@ -136,3 +136,59 @@ class KhasraDialog(QDialog):
             ),
             remarks=self._remarks.text().strip(),
         )
+    
+    def set_parcel(
+        self,
+        parcel: Parcel,
+    ) -> None:
+        """
+        Populate the dialog from an existing parcel.
+        """
+
+        self._rectangle.setValue(
+            parcel.number.rectangle,
+        )
+
+        self._killa.setText(
+            parcel.number.killa,
+        )
+
+        self._kanal.setValue(
+         parcel.area.kanal,
+        )
+
+        self._marla.setValue(
+            parcel.area.marla,
+        )
+
+        self._sarsai.setValue(
+            parcel.area.sarsai,
+        )
+
+        self._remarks.setText(
+            parcel.remarks,
+    )
+
+
+    def update_parcel(
+        self,
+        parcel: Parcel,
+    ) -> None:
+        """
+        Update an existing parcel from the dialog.
+        """
+
+        parcel.number = ParcelNumber(
+            rectangle=self._rectangle.value(),
+            killa=self._killa.text().strip(),
+        )
+
+        parcel.area = Area.from_kms(
+            kanal=self._kanal.value(),
+            marla=self._marla.value(),
+            sarsai=self._sarsai.value(),
+        )
+
+        parcel.remarks = (
+            self._remarks.text().strip()
+        )
