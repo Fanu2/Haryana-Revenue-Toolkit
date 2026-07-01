@@ -56,11 +56,12 @@ class VillageDialog(BaseDialog):
 
         self._district_edit = QLineEdit(self)
 
-        self._state_edit = QLineEdit(self)
+        self._state_edit = QLineEdit("Haryana", self)
+        self._state_edit.setReadOnly(True)
 
         self._button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok
-            | QDialogButtonBox.StandardButton.Cancel,
+        |   QDialogButtonBox.StandardButton.Cancel,
             self,
         )
 
@@ -105,7 +106,7 @@ class VillageDialog(BaseDialog):
             self.reject
         )
 
-        # ---------------------------------------------------------
+    # ---------------------------------------------------------
     # Data Binding
     # ---------------------------------------------------------
 
@@ -135,6 +136,8 @@ class VillageDialog(BaseDialog):
         self._tehsil_edit.setText(village.tehsil)
         self._district_edit.setText(village.district)
         self._state_edit.setText(village.state)
+    
+    
     def update_village(
         self,
         village: Village,

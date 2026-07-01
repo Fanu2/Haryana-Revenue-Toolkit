@@ -6,6 +6,8 @@ Village Mapper.
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from hrtk.domain.village import Village
 from hrtk.infrastructure.sqlite.models.village_model import (
     VillageModel,
@@ -26,6 +28,7 @@ class VillageMapper:
         """
 
         return VillageModel(
+            id=str(village.id),
             code=village.code,
             name=village.name,
             tehsil=village.tehsil,
@@ -43,6 +46,7 @@ class VillageMapper:
         """
 
         return Village(
+            id=UUID(model.id),
             code=model.code,
             name=model.name,
             tehsil=model.tehsil,

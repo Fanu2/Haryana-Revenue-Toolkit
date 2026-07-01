@@ -6,9 +6,10 @@ SQLite Village Model.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from sqlalchemy import (
     Boolean,
-    Integer,
     String,
     UniqueConstraint,
 )
@@ -36,13 +37,13 @@ class VillageModel(Base):
     )
 
     # ---------------------------------------------------------
-    # Primary Key
+    # Primary Key (UUID)
     # ---------------------------------------------------------
 
-    id: Mapped[int] = mapped_column(
-        Integer,
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        autoincrement=True,
+        default=lambda: str(uuid4()),
     )
 
     # ---------------------------------------------------------
