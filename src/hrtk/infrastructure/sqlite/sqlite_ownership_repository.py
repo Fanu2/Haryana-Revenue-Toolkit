@@ -24,6 +24,8 @@ from hrtk.repositories.ownership_repository import (
     OwnershipRepository,
 )
 
+from sqlalchemy import func
+
 
 class SQLiteOwnershipRepository(
     OwnershipRepository,
@@ -47,14 +49,56 @@ class SQLiteOwnershipRepository(
         ownership: Ownership,
     ) -> None:
 
-        raise NotImplementedError
+        with unit_of_work() as session:
+
+            model = session.get(
+                OwnershipModel,
+                str(ownership.id),
+            )
+
+            if model is None:
+                return
+
+            model.owner_id = str(
+                ownership.owner_id
+            )
+
+            model.khewat_id = str(
+                ownership.khewat_id
+            )
+
+            model.numerator = (
+                ownership.share.numerator
+            )
+
+            model.denominator = (
+                ownership.share.denominator
+            )
+
+            model.remarks = (
+                ownership.remarks
+            )
+
+            model.active = (
+                ownership.active
+            )
 
     def remove(
         self,
         ownership_id: UUID,
     ) -> None:
 
-        raise NotImplementedError
+        with unit_of_work() as session:
+
+            model = session.get(
+                OwnershipModel,
+                str(ownership_id),
+            )
+
+            if model is not None:
+                session.delete(
+                    model,
+                )
 
     def get(
         self,
@@ -145,3 +189,37 @@ class SQLiteOwnershipRepository(
                 )
                 for model in models
             ]
+        
+
+    def exists(
+        self,
+        owner_id: UUID,
+        khewat_id: UUID,
+    ) -> bool:
+
+        with unit_of_work() as session:
+
+            model = session.scalar(
+                select(
+                    OwnershipModel,
+                ).where(
+                    OwnershipModel.owner_id
+                    == str(owner_id),
+                    OwnershipModel.khewat_id
+                    == str(khewat_id),
+                )
+            )
+
+            return model is not None
+
+    def count(
+        self,
+    ) -> int:
+
+        with unit_of_work() as session:
+
+            return (
+                session.query(
+                    OwnershipModel,
+                ).count()
+            )

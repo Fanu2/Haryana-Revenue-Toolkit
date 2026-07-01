@@ -38,6 +38,7 @@ class Navigator(QTreeWidget):
         revenue.addChild(QTreeWidgetItem(["Owners"]))
         revenue.addChild(QTreeWidgetItem(["Khewats"]))
         revenue.addChild(QTreeWidgetItem(["Khasras"]))
+        revenue.addChild(QTreeWidgetItem(["Ownership"]))
         revenue.addChild(
             QTreeWidgetItem(
                 ["Partition Workspace"]
@@ -59,7 +60,8 @@ class Navigator(QTreeWidget):
         self.addTopLevelItem(settings)
 
         self.expandAll()
-
+    
+    
     def _item_clicked(
         self,
         item: QTreeWidgetItem,

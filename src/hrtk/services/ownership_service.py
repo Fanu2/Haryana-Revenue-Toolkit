@@ -76,3 +76,24 @@ class OwnershipService:
         return self._repository.find_by_khewat(
             khewat_id,
         )
+    
+    def exists(
+        self,
+        owner_id: UUID,
+        khewat_id: UUID,
+    ) -> bool:
+
+        return self._repository.exists(
+            owner_id,
+            khewat_id,
+        )
+    def exists(
+        self,
+        owner_id: UUID,
+        khewat_id: UUID,
+    ) -> bool:
+
+        return self._repository.exists(
+            owner_id,
+            khewat_id,
+        )

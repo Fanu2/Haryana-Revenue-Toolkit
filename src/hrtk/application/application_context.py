@@ -39,6 +39,10 @@ from hrtk.infrastructure.sqlite.sqlite_parcel_repository import (
     SQLiteParcelRepository,
 )
 
+from hrtk.infrastructure.sqlite.sqlite_ownership_repository import (
+    SQLiteOwnershipRepository,
+)
+
 from hrtk.services.village_service import (
     VillageService,
 )
@@ -51,6 +55,11 @@ from hrtk.services.khewat_service import (
 from hrtk.services.parcel_service import (
     ParcelService,
 )
+
+from hrtk.services.ownership_service import (
+    OwnershipService,
+)
+
 
 
 class ApplicationContext:
@@ -113,6 +122,10 @@ class ApplicationContext:
             SQLiteParcelRepository()
         )
 
+        self._ownership_repository = (
+            SQLiteOwnershipRepository()
+        )
+
         #
         # Services
         #
@@ -131,6 +144,10 @@ class ApplicationContext:
 
         self._parcel_service = ParcelService(
             self._parcel_repository,
+        )
+
+        self._ownership_service = OwnershipService(
+        self._ownership_repository,
         )
 
         self._logging.logger.info(
@@ -188,6 +205,12 @@ class ApplicationContext:
         self,
     ) -> SQLiteParcelRepository:
         return self._parcel_repository
+    
+    @property
+    def ownership_repository(
+        self,
+    ) -> SQLiteOwnershipRepository:
+        return self._ownership_repository
 
     # ---------------------------------------------------------
     # Services
@@ -216,6 +239,12 @@ class ApplicationContext:
         self,
     ) -> ParcelService:
         return self._parcel_service
+    
+    @property
+    def ownership_service(
+        self,
+    ) -> OwnershipService:
+        return self._ownership_service
 
     # ---------------------------------------------------------
     # Shutdown
