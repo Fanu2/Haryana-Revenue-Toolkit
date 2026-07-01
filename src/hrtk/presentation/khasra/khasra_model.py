@@ -25,7 +25,6 @@ class KhasraModel(QAbstractTableModel):
         "Rectangle",
         "Killa",
         "Area",
-        "Status",
         "Remarks",
     )
 
@@ -131,16 +130,11 @@ class KhasraModel(QAbstractTableModel):
             case 2:
                 return str(
                     parcel.area
-                )
+        )
 
             case 3:
-                return str(
-                    parcel.status
-                )
-
-            case 4:
                 return (
                     parcel.remarks
-                )
+        )
 
         return None
