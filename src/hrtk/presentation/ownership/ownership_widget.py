@@ -26,6 +26,10 @@ from hrtk.presentation.ownership.ownership_toolbar import (
 )
 
 
+from hrtk.presentation.common.form_mode import (
+    FormMode,
+)
+
 from hrtk.presentation.ownership.ownership_dialog import (
     OwnershipDialog,
 )
@@ -236,8 +240,10 @@ class OwnershipWidget(QWidget):
     def _add_ownership(
         self,
     ) -> None:
-
-        dialog = OwnershipDialog(self)
+        dialog = OwnershipDialog(
+        FormMode.CREATE,
+            self,
+        )
 
         #
         # Load Owners
@@ -309,13 +315,80 @@ class OwnershipWidget(QWidget):
             "Ownership added successfully."
         )
 
-    def _edit_ownership(
-        self,
-    ) -> None:
-        """
-        Edit the selected ownership.
-        """
+def _edit_ownership(
+    self,
+) -> None:
+    """
+    Edit the selected ownership.
+    """
+
+    ownership = self._table.selected_ownership()
+
+    if ownership is None:
 
         self._status_label.setText(
-            "Edit Ownership - Coming Soon"
+            "Please select an ownership record."
         )
+
+        return
+
+    dialog = OwnershipDialog(
+        FormMode.EDIT,
+        self,
+    )
+
+    #
+    # Load Owners
+    #
+
+    owners = []
+
+    for owner in self._context.owner_service.all():
+
+        owners.append(
+            (
+                str(owner.id),
+                owner.display_name,
+            )
+        )
+
+    dialog.set_owners(
+        owners,
+    )
+
+    #
+    # Populate dialog
+    #
+
+    dialog.set_ownership(
+        ownership,
+    )
+
+    if not dialog.exec():
+        return
+
+    #
+    # Copy edited values back
+    #
+
+    dialog.update_ownership(
+        ownership,
+    )
+
+    #
+    # Save
+    #
+
+    self._context.ownership_service.update(
+        ownership,
+    )
+
+    #
+    # Refresh
+    #
+
+    self._load_ownerships()
+
+    self._status_label.setText(
+        "Ownership updated successfully."
+    )

@@ -6,6 +6,8 @@ Ownership Table View.
 
 from __future__ import annotations
 
+from hrtk.domain.ownership import Ownership
+
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
@@ -77,3 +79,23 @@ class OwnershipTable(QTableView):
     ) -> OwnershipTableModel:
 
         return self._model
+
+    # ---------------------------------------------------------
+    # Selection Helpers
+    # ---------------------------------------------------------
+
+    def selected_ownership(
+        self,
+    ) -> Ownership | None:
+        """
+        Returns the currently selected ownership.
+        """
+
+        indexes = self.selectionModel().selectedRows()
+
+        if not indexes:
+            return None
+
+        row = indexes[0].row()
+
+        return self._model.ownerships[row]
