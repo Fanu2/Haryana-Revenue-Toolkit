@@ -37,6 +37,10 @@ from hrtk.presentation.ownership.ownership_toolbar import (
     OwnershipToolbar,
 )
 
+from hrtk.presentation.common.message_service import (
+    MessageService,
+)
+
 
 class OwnershipWidget(QWidget):
     """
@@ -155,6 +159,10 @@ class OwnershipWidget(QWidget):
 
         self._toolbar.refresh_requested.connect(
             self._load_ownerships,
+        )
+
+        self._toolbar.delete_requested.connect(
+        self._delete_ownership,
         )
     # ---------------------------------------------------------
     # Loading
@@ -482,13 +490,50 @@ class OwnershipWidget(QWidget):
     # Future Delete Support
     # ---------------------------------------------------------
 
+    # ---------------------------------------------------------
+    # Delete Ownership
+    # ---------------------------------------------------------
+
     def _delete_ownership(
         self,
     ) -> None:
         """
-        Placeholder for Delete Ownership.
+        Delete the selected ownership.
         """
 
+        ownership = (
+            self._table.selected_ownership()
+        )
+
+        if ownership is None:
+
+            self._status_label.setText(
+                "Please select an ownership."
+            )
+
+            return
+
+        # ------------------------------------------
+        # Confirmation
+        # ------------------------------------------
+
+        if not MessageService.confirm(
+            self,
+            "Delete Ownership",
+            "Delete selected ownership?",
+        ):
+            return
+
+        # ------------------------------------------
+        # Delete
+        # ------------------------------------------
+
+        self._context.ownership_service.remove(
+            ownership.id,
+        )
+
+        self._load_ownerships()
+
         self._status_label.setText(
-            "Delete Ownership - Coming Soon"
+            "Ownership deleted successfully."
         )
