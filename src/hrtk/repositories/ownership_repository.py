@@ -77,9 +77,4 @@ class OwnershipRepository(Protocol):
         """
         ...
 
-    def exists(
-        self,
-        owner_id: UUID,
-        khewat_id: UUID,
-    ) -> bool:
-     ...
+    
