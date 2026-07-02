@@ -32,7 +32,7 @@ from hrtk.presentation.ownership.ownership_dialog import (
 
 from hrtk.domain.ownership import Ownership
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 
 class OwnershipWidget(QWidget):
@@ -142,6 +142,10 @@ class OwnershipWidget(QWidget):
             self._load_ownerships
         )
 
+        self._toolbar.edit_requested.connect(
+            self._edit_ownership
+        )
+
         self._toolbar.add_requested.connect(
             self._add_ownership
         )
@@ -214,7 +218,7 @@ class OwnershipWidget(QWidget):
 
         for owner in self._context.owner_service.all():
 
-            owner_names[str(owner.id)] = owner.owner_name
+            owner_names[str(owner.id)] = owner.display_name
 
         self._table.model.set_ownerships(
             ownerships,
@@ -246,7 +250,7 @@ class OwnershipWidget(QWidget):
             owners.append(
                 (
                     str(owner.id),
-                    owner.owner_name,
+                    owner.display_name,
                 )
             )
 
@@ -261,7 +265,7 @@ class OwnershipWidget(QWidget):
             dialog.ownership_data()
         )
 
-        owner_id = UUID(owner_id)
+                
 
         khewat_id = (
             self._khewat_combo.currentData()
@@ -269,6 +273,23 @@ class OwnershipWidget(QWidget):
 
         if khewat_id is None:
             return
+
+        # ---------------------------------------------------------
+        # Prevent duplicate ownership
+        # ---------------------------------------------------------
+
+        if self._context.ownership_service.exists(
+            owner_id,
+            khewat_id,
+        ):
+            self._status_label.setText(
+                "Owner already exists in this Khewat."
+            )
+            return
+
+        # ---------------------------------------------------------
+        # Create Ownership
+        # ---------------------------------------------------------
 
         ownership = Ownership(
             id=uuid4(),
@@ -283,3 +304,18 @@ class OwnershipWidget(QWidget):
         )
 
         self._load_ownerships()
+
+        self._status_label.setText(
+            "Ownership added successfully."
+        )
+
+    def _edit_ownership(
+        self,
+    ) -> None:
+        """
+        Edit the selected ownership.
+        """
+
+        self._status_label.setText(
+            "Edit Ownership - Coming Soon"
+        )
