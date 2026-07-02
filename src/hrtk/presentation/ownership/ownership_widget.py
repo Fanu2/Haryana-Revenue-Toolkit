@@ -6,6 +6,8 @@ Ownership Workspace.
 
 from __future__ import annotations
 
+from uuid import UUID, uuid4
+
 from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
@@ -17,14 +19,7 @@ from hrtk.application.application_context import (
     ApplicationContext,
 )
 
-from hrtk.presentation.ownership.ownership_table import (
-    OwnershipTable,
-)
-
-from hrtk.presentation.ownership.ownership_toolbar import (
-    OwnershipToolbar,
-)
-
+from hrtk.domain.ownership import Ownership
 
 from hrtk.presentation.common.form_mode import (
     FormMode,
@@ -34,9 +29,13 @@ from hrtk.presentation.ownership.ownership_dialog import (
     OwnershipDialog,
 )
 
-from hrtk.domain.ownership import Ownership
+from hrtk.presentation.ownership.ownership_table import (
+    OwnershipTable,
+)
 
-from uuid import uuid4
+from hrtk.presentation.ownership.ownership_toolbar import (
+    OwnershipToolbar,
+)
 
 
 class OwnershipWidget(QWidget):
@@ -62,30 +61,34 @@ class OwnershipWidget(QWidget):
 
         self._load_villages()
 
-        
-
     # ---------------------------------------------------------
-    # Widgets
+    # Widget Creation
     # ---------------------------------------------------------
 
     def _create_widgets(
         self,
     ) -> None:
 
-        self._village_combo = QComboBox()
+        self._village_combo = QComboBox(
+            self,
+        )
 
-        self._khewat_combo = QComboBox()
+        self._khewat_combo = QComboBox(
+            self,
+        )
 
         self._toolbar = OwnershipToolbar()
 
         self._table = OwnershipTable()
 
         self._total_label = QLabel(
-            "Total Share : 0/1"
+            "Ownership Records : 0",
+            self,
         )
 
         self._status_label = QLabel(
-            "Status : ---"
+            "Ready",
+            self,
         )
 
     # ---------------------------------------------------------
@@ -135,25 +138,24 @@ class OwnershipWidget(QWidget):
     ) -> None:
 
         self._village_combo.currentIndexChanged.connect(
-            self._load_khewats
+            self._load_khewats,
         )
 
         self._khewat_combo.currentIndexChanged.connect(
-            self._load_ownerships
-        )
-
-        self._toolbar.refresh_requested.connect(
-            self._load_ownerships
-        )
-
-        self._toolbar.edit_requested.connect(
-            self._edit_ownership
+            self._load_ownerships,
         )
 
         self._toolbar.add_requested.connect(
-            self._add_ownership
+            self._add_ownership,
         )
 
+        self._toolbar.edit_requested.connect(
+            self._edit_ownership,
+        )
+
+        self._toolbar.refresh_requested.connect(
+            self._load_ownerships,
+        )
     # ---------------------------------------------------------
     # Loading
     # ---------------------------------------------------------
@@ -161,6 +163,13 @@ class OwnershipWidget(QWidget):
     def _load_villages(
         self,
     ) -> None:
+        """
+        Load all villages.
+        """
+
+        self._village_combo.blockSignals(
+            True,
+        )
 
         self._village_combo.clear()
 
@@ -175,58 +184,123 @@ class OwnershipWidget(QWidget):
                 village.id,
             )
 
+        self._village_combo.blockSignals(
+            False,
+        )
+
+        if self._village_combo.count():
+
+            self._load_khewats()
+
     def _load_khewats(
         self,
     ) -> None:
+        """
+        Load Khewats for selected village.
+        """
+
+        self._khewat_combo.blockSignals(
+            True,
+        )
 
         self._khewat_combo.clear()
 
-        village_id = self._village_combo.currentData()
+        village_id = (
+            self._village_combo.currentData()
+        )
 
         if village_id is None:
+
+            self._khewat_combo.blockSignals(
+                False,
+            )
+
             return
 
-        khewats = self._context.khewat_service.all()
+        village_id = UUID(
+            str(village_id),
+        )
 
-        for khewat in khewats:
+        for khewat in (
+            self._context.khewat_service.all()
+        ):
 
-            #
-            # Filter by village
-            #
-            if khewat.village_id == village_id:
+            if khewat.village_id != village_id:
+                continue
 
-                self._khewat_combo.addItem(
-                    khewat.display_name,
-                    khewat.id,
+            self._khewat_combo.addItem(
+                khewat.display_name,
+                khewat.id,
+            )
+
+        self._khewat_combo.blockSignals(
+            False,
+        )
+
+        if self._khewat_combo.count():
+
+            self._load_ownerships()
+
+        else:
+
+            self._table.model.set_ownerships(
+                [],
+                {},
+            )
+
+            self._total_label.setText(
+                "Ownership Records : 0"
+            )
+
+            self._status_label.setText(
+                "No Khewats found."
             )
 
     def _load_ownerships(
         self,
     ) -> None:
+        """
+        Load Ownership records.
+        """
 
-        khewat_id = self._khewat_combo.currentData()
+        khewat_id = (
+            self._khewat_combo.currentData()
+        )
 
         if khewat_id is None:
+
+            self._table.model.set_ownerships(
+                [],
+                {},
+            )
+
             return
 
+        khewat_id = UUID(
+            str(khewat_id),
+        )
+
         ownerships = (
-            self._context.ownership_service.by_khewat(
+            self._context
+            .ownership_service
+            .by_khewat(
                 khewat_id,
             )
         )
 
-        #
-        # Temporary owner lookup
-        #
-        owner_names = {}
+        owner_lookup = {}
 
-        for owner in self._context.owner_service.all():
+        for owner in (
+            self._context.owner_service.all()
+        ):
 
-            owner_names[str(owner.id)] = owner.display_name
+            owner_lookup[
+                str(owner.id)
+            ] = owner.display_name
 
         self._table.model.set_ownerships(
             ownerships,
-            owner_names,
+            owner_lookup,
         )
 
         self._total_label.setText(
@@ -234,24 +308,42 @@ class OwnershipWidget(QWidget):
         )
 
         self._status_label.setText(
-            "Loaded"
+            "Loaded successfully."
         )
+    # ---------------------------------------------------------
+    # Add Ownership
+    # ---------------------------------------------------------
 
     def _add_ownership(
         self,
     ) -> None:
-        dialog = OwnershipDialog(
-        FormMode.CREATE,
-            self,
+        """
+        Add a new ownership.
+        """
+
+        khewat_id = self._khewat_combo.currentData()
+
+        if khewat_id is None:
+
+            self._status_label.setText(
+                "Please select a Khewat."
+            )
+
+            return
+
+        khewat_id = UUID(
+            str(khewat_id),
         )
 
-        #
-        # Load Owners
-        #
+        dialog = OwnershipDialog(
+            FormMode.CREATE,
+        )
 
         owners = []
 
-        for owner in self._context.owner_service.all():
+        for owner in (
+            self._context.owner_service.all()
+        ):
 
             owners.append(
                 (
@@ -265,37 +357,39 @@ class OwnershipWidget(QWidget):
         )
 
         if not dialog.exec():
+
+            self._status_label.setText(
+                "Operation cancelled."
+            )
+
             return
 
         owner_id, share, remarks = (
             dialog.ownership_data()
         )
 
-                
-
-        khewat_id = (
-            self._khewat_combo.currentData()
+        owner_id = UUID(
+            str(owner_id),
         )
 
-        if khewat_id is None:
-            return
-
-        # ---------------------------------------------------------
+        #
         # Prevent duplicate ownership
-        # ---------------------------------------------------------
+        #
 
-        if self._context.ownership_service.exists(
-            owner_id,
-            khewat_id,
+        if (
+            self._context
+            .ownership_service
+            .exists(
+                owner_id,
+                khewat_id,
+            )
         ):
+
             self._status_label.setText(
                 "Owner already exists in this Khewat."
             )
-            return
 
-        # ---------------------------------------------------------
-        # Create Ownership
-        # ---------------------------------------------------------
+            return
 
         ownership = Ownership(
             id=uuid4(),
@@ -312,83 +406,89 @@ class OwnershipWidget(QWidget):
         self._load_ownerships()
 
         self._status_label.setText(
-            "Ownership added successfully."
+            "Ownership created successfully."
+        )
+    # ---------------------------------------------------------
+    # Edit Ownership
+    # ---------------------------------------------------------
+
+    def _edit_ownership(
+        self,
+    ) -> None:
+        """
+        Edit the selected ownership.
+        """
+
+        ownership = (
+            self._table.selected_ownership()
         )
 
-def _edit_ownership(
-    self,
-) -> None:
-    """
-    Edit the selected ownership.
-    """
+        if ownership is None:
 
-    ownership = self._table.selected_ownership()
+            self._status_label.setText(
+                "Please select an ownership."
+            )
 
-    if ownership is None:
+            return
+
+        dialog = OwnershipDialog(
+            FormMode.EDIT,
+        )
+
+        owners = []
+
+        for owner in (
+            self._context.owner_service.all()
+        ):
+
+            owners.append(
+                (
+                    str(owner.id),
+                    owner.display_name,
+                )
+            )
+
+        dialog.set_owners(
+            owners,
+        )
+
+        dialog.set_ownership(
+            ownership,
+        )
+
+        if not dialog.exec():
+
+            self._status_label.setText(
+                "Edit cancelled."
+            )
+
+            return
+
+        dialog.update_ownership(
+            ownership,
+        )
+
+        self._context.ownership_service.update(
+            ownership,
+        )
+
+        self._load_ownerships()
 
         self._status_label.setText(
-            "Please select an ownership record."
+            "Ownership updated successfully."
         )
 
-        return
+    # ---------------------------------------------------------
+    # Future Delete Support
+    # ---------------------------------------------------------
 
-    dialog = OwnershipDialog(
-        FormMode.EDIT,
+    def _delete_ownership(
         self,
-    )
+    ) -> None:
+        """
+        Placeholder for Delete Ownership.
+        """
 
-    #
-    # Load Owners
-    #
-
-    owners = []
-
-    for owner in self._context.owner_service.all():
-
-        owners.append(
-            (
-                str(owner.id),
-                owner.display_name,
-            )
+        self._status_label.setText(
+            "Delete Ownership - Coming Soon"
         )
-
-    dialog.set_owners(
-        owners,
-    )
-
-    #
-    # Populate dialog
-    #
-
-    dialog.set_ownership(
-        ownership,
-    )
-
-    if not dialog.exec():
-        return
-
-    #
-    # Copy edited values back
-    #
-
-    dialog.update_ownership(
-        ownership,
-    )
-
-    #
-    # Save
-    #
-
-    self._context.ownership_service.update(
-        ownership,
-    )
-
-    #
-    # Refresh
-    #
-
-    self._load_ownerships()
-
-    self._status_label.setText(
-        "Ownership updated successfully."
-    )
