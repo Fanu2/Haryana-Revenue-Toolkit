@@ -77,3 +77,42 @@ class ParcelService:
         """
 
         return self._repository.list()
+    
+    def update(
+        self,
+        parcel: Parcel,
+    ) -> None:
+        """
+        Update an existing parcel.
+        """
+
+        if not self._repository.exists(
+            parcel.number,
+        ):
+            raise ValueError(
+                f"Parcel '{parcel.number}' does not exist."
+            )
+
+        self._repository.update(
+            parcel,
+        )
+
+
+    def delete(
+        self,
+        number: ParcelNumber,
+    ) -> None:
+        """
+        Delete a parcel.
+        """
+
+        if not self._repository.exists(
+            number,
+        ):
+            raise ValueError(
+                f"Parcel '{number}' does not exist."
+            )
+
+        self._repository.remove(
+            number,
+        )

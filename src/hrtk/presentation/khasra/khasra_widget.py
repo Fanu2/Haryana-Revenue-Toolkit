@@ -193,6 +193,6 @@ class KhasraWidget(QWidget):
         if parcel is None:
             return
 
-        self._service.delete(parcel.id)
+        self._service.delete(parcel.number)
 
         self._model.refresh()

@@ -110,12 +110,60 @@ class SQLiteParcelRepository(ParcelRepository):
         self,
         parcel: Parcel,
     ) -> None:
+        """
+        Update an existing parcel.
+        """
 
-        raise NotImplementedError
+        with unit_of_work() as session:
 
+            stmt = select(
+                ParcelModel,
+            ).where(
+                ParcelModel.rectangle == parcel.number.rectangle,
+                ParcelModel.killa == parcel.number.killa,
+            )
+
+            model = session.scalar(
+                stmt,
+            )
+
+            if model is None:
+                raise ValueError(
+                    f"Parcel '{parcel.number}' does not exist."
+                )
+
+            model.kanal = parcel.area.kanal
+            model.marla = parcel.area.marla
+            model.sarsai = parcel.area.sarsai
+            model.remarks = parcel.remarks
+    
+    
     def remove(
         self,
         number: ParcelNumber,
     ) -> None:
+            """
+            Remove a parcel.
+            """
 
-        raise NotImplementedError
+            with unit_of_work() as session:
+
+                stmt = select(
+                    ParcelModel,
+                ).where(
+                    ParcelModel.rectangle == number.rectangle,
+                    ParcelModel.killa == number.killa,
+                )
+
+                model = session.scalar(
+                    stmt,
+                )
+
+                if model is None:
+                    raise ValueError(
+                        f"Parcel '{number}' does not exist."
+                    )
+
+                session.delete(
+                    model,
+                )

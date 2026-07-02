@@ -102,6 +102,10 @@ class KhewatWidget(QWidget):
             self._edit_khewat
         )
 
+        self._table.khewat_activated.connect(
+            self._select_khewat,
+        )
+
         self._toolbar.deactivate_requested.connect(
             self._deactivate_khewat
         )
@@ -322,4 +326,21 @@ class KhewatWidget(QWidget):
 
         self._proxy.set_search_text(
             text,
+        )
+    def _select_khewat(
+        self,
+     khewat: Khewat,
+    ) -> None:
+        """
+        Handle Khewat selection.
+        """
+
+        self._current_khewat = khewat
+
+        self._toolbar.enable_selection_actions(
+            True,
+        )
+
+        print(
+            f"[KhewatWidget] Selected Khewat: {khewat.khewat_no}"
         )
