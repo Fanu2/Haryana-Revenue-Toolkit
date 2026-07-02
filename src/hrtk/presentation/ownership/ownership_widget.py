@@ -164,6 +164,10 @@ class OwnershipWidget(QWidget):
         self._toolbar.delete_requested.connect(
         self._delete_ownership,
         )
+        
+        self._toolbar.validate_requested.connect(
+        self._validate_ownership,
+        )
     # ---------------------------------------------------------
     # Loading
     # ---------------------------------------------------------
@@ -537,3 +541,117 @@ class OwnershipWidget(QWidget):
         self._status_label.setText(
             "Ownership deleted successfully."
         )
+
+    # ---------------------------------------------------------
+    # Validate Ownership
+    # ---------------------------------------------------------
+
+    def _validate_ownership(
+        self,
+    ) -> None:
+        """
+        Validate ownership records of the selected Khewat.
+        """
+
+        khewat_id = self._khewat_combo.currentData()
+
+        if khewat_id is None:
+
+            self._status_label.setText(
+                "Please select a Khewat."
+            )
+
+            return
+
+        ownerships = (
+            self._context
+            .ownership_service
+            .by_khewat(
+                UUID(str(khewat_id))
+            )
+        )
+
+        #
+        # Duplicate owners
+        #
+
+        owners = set()
+
+        for ownership in ownerships:
+
+            if ownership.owner_id in owners:
+
+                MessageService.warning(
+                    self,
+                    "Validation",
+                    "Duplicate owner found.",
+                )
+
+                self._status_label.setText(
+                    "Validation failed."
+                )
+
+                return
+
+            owners.add(
+                ownership.owner_id
+            )
+
+        #
+        # Total share
+        #
+
+        numerator = 0
+        denominator = 1
+
+        for ownership in ownerships:
+
+            numerator = (
+                numerator * ownership.share.denominator
+                +
+                ownership.share.numerator * denominator
+            )
+
+            denominator *= (
+                ownership.share.denominator
+            )
+
+        #
+        # Reduce fraction
+        #
+
+        from math import gcd
+
+        g = gcd(
+            numerator,
+            denominator,
+        )
+
+        numerator //= g
+        denominator //= g
+
+        if (
+            numerator == 1
+            and denominator == 1
+        ):
+
+            MessageService.success(
+                self,
+                "Ownership validation successful.",
+            )
+
+            self._status_label.setText(
+                "✔ Ownership Valid"
+            )
+
+        else:
+
+            MessageService.warning(
+                self,
+                "Validation",
+                f"Total Share = {numerator}/{denominator}"
+            )
+
+            self._status_label.setText(
+                f"✖ Total = {numerator}/{denominator}"
+            )
