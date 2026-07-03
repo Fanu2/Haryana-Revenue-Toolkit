@@ -144,15 +144,36 @@ class PartitionOwnerTable(
         )
 
         if not indexes:
-
             return None
 
         return self._model.ownership_at(
             indexes[0].row(),
         )
 
+    def selected_owner_name(
+        self,
+    ) -> str:
+        """
+        Return the selected owner's display name.
+        """
+
+        indexes = (
+            self.selectionModel()
+            .selectedRows()
+        )
+
+        if not indexes:
+            return "---"
+
+        return self._model.owner_name_at(
+            indexes[0].row(),
+        )
+
     def clear_selection(
         self,
     ) -> None:
+        """
+        Clear the current selection.
+        """
 
         self.clearSelection()

@@ -157,6 +157,10 @@ class PartitionOwnerModel(
     # Helpers
     # ---------------------------------------------------------
 
+    # ---------------------------------------------------------
+    # Helpers
+    # ---------------------------------------------------------
+
     @property
     def ownerships(
         self,
@@ -182,6 +186,30 @@ class PartitionOwnerModel(
             ]
 
         return None
+
+    def owner_name_at(
+        self,
+        row: int,
+    ) -> str:
+        """
+        Return the display name of the owner
+        for the specified row.
+        """
+
+        ownership = self.ownership_at(
+            row,
+        )
+
+        if ownership is None:
+
+            return "---"
+
+        return self._owner_names.get(
+            str(
+                ownership.owner_id,
+            ),
+            "Unknown Owner",
+        )
 
     def clear(
         self,

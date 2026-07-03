@@ -596,38 +596,16 @@ class PartitionWidget(QWidget):
         Ownership selection changed.
         """
 
-        ownership = (
-            self._owner_table.selected_ownership()
+        name = (
+            self._owner_table.selected_owner_name()
         )
-
-        if ownership is None:
-
-            self._allocation_panel.set_owner(
-                "---"
-            )
-
-            return
-
-        owner = (
-            self._context.owner_service.get(
-                ownership.owner_id,
-            )
-        )
-
-        if owner is None:
-
-            self._allocation_panel.set_owner(
-                "Unknown Owner"
-            )
-
-            return
 
         self._allocation_panel.set_owner(
-            owner.display_name
+            name,
         )
 
         self._status.setText(
-            f"Owner selected: {owner.display_name}"
+            f"Owner selected: {name}"
         )
 
     def _khasra_selected(
