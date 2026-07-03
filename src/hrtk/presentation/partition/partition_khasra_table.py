@@ -144,3 +144,12 @@ class PartitionKhasraTable(
     ) -> None:
 
         self._model.clear()
+
+    def set_khasras(
+        self,
+        khasras,
+    ) -> None:
+
+        self._model.set_khasras(
+            khasras,
+        )

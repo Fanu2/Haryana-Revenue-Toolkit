@@ -338,9 +338,9 @@ class PartitionWidget(QWidget):
 
             return
 
-        #
-        # Load Owners
-        #
+    # ---------------------------------------------------------
+    # Load Ownership Records
+    # ---------------------------------------------------------
 
         ownerships = (
             self._context
@@ -350,55 +350,61 @@ class PartitionWidget(QWidget):
             )
         )
 
-        #
-        # Load Khasras
-        #
+    # ---------------------------------------------------------
+    # Load Parcels (Temporary)
+    #
+    # Stable Parcel module does not yet support
+    # Khewat filtering, so load all parcels.
+    # ---------------------------------------------------------
 
         khasras = []
 
         if hasattr(
             self._context,
-            "khasra_service",
+            "parcel_service",
         ):
 
-            if hasattr(
-                self._context.khasra_service,
-                "by_khewat",
-            ):
+            khasras = (
+            self._context
+            .parcel_service
+            .list()
+        )
+            
+        print("PARCEL COUNT =", len(khasras))
+        for p in khasras:
+            print(p)
 
-                khasras = (
-                    self._context
-                    .khasra_service
-                    .by_khewat(
-                        khewat_id,
-                    )
-                )
+    # ---------------------------------------------------------
+    # Owner Lookup
+    # ---------------------------------------------------------
 
-        #
-        # Populate Owner Table
-        #
+        owner_names = {}
+
+        for owner in (
+            self._context.owner_service.all()
+        ):
+
+            owner_names[
+                str(owner.id)
+            ] = owner.display_name
+
+    # ---------------------------------------------------------
+    # Populate Owner Table
+    # ---------------------------------------------------------
 
         if hasattr(
             self._owner_table,
             "set_ownerships",
         ):
 
-            owner_names = {}
+            self._owner_table.set_ownerships(
+                ownerships,
+                owner_names,
+            )
 
-            for owner in self._context.owner_service.all():
-
-                owner_names[
-                    str(owner.id)
-                ] = owner.display_name
-
-        self._owner_table.set_ownerships(
-            ownerships,
-            owner_names,
-        )
-
-        #
-        # Populate Khasra Table
-        #
+    # ---------------------------------------------------------
+    # Populate Khasra Table
+    # ---------------------------------------------------------
 
         if hasattr(
             self._khasra_table,
@@ -406,12 +412,17 @@ class PartitionWidget(QWidget):
         ):
 
             self._khasra_table.set_khasras(
-                khasras,
+            khasras,
             )
 
-        #
-        # Summary Panel
-        #
+        print(
+            "ROWS =",
+            self._khasra_table.model.rowCount(),
+        )
+
+    # ---------------------------------------------------------
+    # Summary Panel
+    # ---------------------------------------------------------
 
         if hasattr(
             self._summary,
@@ -421,11 +432,11 @@ class PartitionWidget(QWidget):
             self._summary.update_summary(
                 ownerships,
                 khasras,
-            )
+        )
 
-        #
-        # Validation Panel
-        #
+    # ---------------------------------------------------------
+    # Validation Panel
+    # ---------------------------------------------------------
 
         if hasattr(
             self._validation,
@@ -434,17 +445,11 @@ class PartitionWidget(QWidget):
 
             self._validation.clear()
 
-        #
-        # Status
-        #
+    # ---------------------------------------------------------
+    # Status
+    # ---------------------------------------------------------
 
         self._status.setText(
-
-            f"Loaded "
-
-            f"{len(ownerships)} Owners, "
-
+            f"Loaded {len(ownerships)} Owners, "
             f"{len(khasras)} Khasras."
-
         )
-

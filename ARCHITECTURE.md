@@ -1,528 +1,480 @@
-\# Haryana Revenue Toolkit (HRTK)
+# Haryana Revenue Toolkit (HRTK)
 
+# Software Architecture
 
+Version: 1.0
 
-\*\*Architecture Guide\*\*
+Status: Active
 
+---
 
+# Purpose
 
-| Item | Value |
+This document describes the software architecture of the Haryana Revenue Toolkit (HRTK).
 
-|------|-------|
+The objective is to maintain a clean, scalable and maintainable architecture while accurately modelling Haryana Revenue Administration.
 
-| Project | Haryana Revenue Toolkit (HRTK) |
+---
 
-| Version | 0.5.0 |
+# Architectural Style
 
-| Status | Foundation Freeze |
-
-| Document Type | Engineering Architecture |
-
-| Audience | Developers, Contributors, Maintainers |
-
-| License | Same as Project |
-
-
-
-\---
-
-
-
-\# Mission Statement
-
-
-
-The Haryana Revenue Toolkit (HRTK) is a professional desktop application for the management of land revenue records, ownership, partition proceedings, survey information, and related administrative workflows.
-
-
-
-The project is designed with long-term maintainability, extensibility, correctness, and usability as its primary architectural goals.
-
-
-
-HRTK is intended to evolve into a complete digital land revenue platform while maintaining a clean, modular, and well-documented codebase.
-
-
-
-\---
-
-
-
-\# Vision
-
-
-
-The long-term vision of HRTK is to become a modern desktop platform for managing the complete lifecycle of land administration.
-
-
-
-The platform will eventually include:
-
-
-
-\- Village Management
-
-\- Owner Management
-
-\- Khewat Management
-
-\- Khasra Management
-
-\- Mutation Management
-
-\- Partition Management
-
-\- Jamabandi Management
-
-\- Survey Tools
-
-\- GIS Integration
-
-\- Reporting
-
-\- Printing
-
-\- Data Import/Export
-
-\- Backup and Restore
-
-\- Analytics
-
-
-
-Every new subsystem should integrate naturally into the existing architecture without requiring major redesign.
-
-
-
-\---
-
-
-
-\# Architectural Philosophy
-
-
-
-The architecture of HRTK is based on several core principles.
-
-
-
-\## Separation of Concerns
-
-
-
-Each layer of the application has one clearly defined responsibility.
-
-
-
-Business rules must remain independent from presentation.
-
-
-
-Presentation must remain independent from persistence.
-
-
-
-Infrastructure must remain independent from business logic.
-
-
-
-\---
-
-
-
-\## Single Responsibility Principle
-
-
-
-Each class should have one primary responsibility.
-
-
-
-Examples:
-
-
-
-\- Widget → User interface
-
-\- Service → Business logic
-
-\- Repository → Data access
-
-\- Exporter → File generation
-
-\- Model → Qt data model
-
-
-
-\---
-
-
-
-\## Reuse Before Duplication
-
-
-
-Reusable functionality belongs in shared framework classes.
-
-
-
-Examples include:
-
-
-
-\- BaseDialog
-
-\- BaseToolbar
-
-\- BaseTable
-
-\- MessageService
-
-\- SaveFileService
-
-\- SearchProxyModel
-
-
-
-Module-specific code should remain inside the corresponding module.
-
-
-
-\---
-
-
-
-\## Architecture Before Features
-
-
-
-Every new subsystem follows the same development lifecycle.
-
-
-
-Architecture
-
-
-
-↓
-
-
-
-Folder Structure
-
-
-
-↓
-
-
-
-Interfaces
-
-
-
-↓
-
-
-
-Implementation
-
-
-
-↓
-
-
-
-Testing
-
-
-
-↓
-
-
-
-Documentation
-
-
-
-↓
-
-
-
-Release
-
-
-
-\---
-
-
-
-\# Layered Architecture
-
-
-
-HRTK follows a layered architecture.
-
-
+HRTK follows a layered architecture inspired by Clean Architecture and Domain Driven Design.
 
 ```
+Presentation
+      │
+      ▼
+Application Services
+      │
+      ▼
+Repositories
+      │
+      ▼
+Domain
+      │
+      ▼
+Infrastructure
+```
 
+Each layer has a single responsibility.
+
+---
+
+# Layer 1 — Presentation
+
+Responsible for:
+
+- User Interface
+- Dialogs
+- Tables
+- Toolbars
+- Navigation
+- Workspace
+- Status Display
+
+Presentation never contains business rules.
+
+Directory
+
+```
+presentation/
+```
+
+Typical classes
+
+```
+VillageWidget
+
+OwnerWidget
+
+KhewatWidget
+
+KhasraWidget
+
+OwnershipWidget
+
+PartitionWidget
+```
+
+---
+
+# Layer 2 — Application
+
+Responsible for:
+
+- Business workflows
+- Validation
+- Orchestration
+- Coordination
+
+Directory
+
+```
+application/
+```
+
+Typical classes
+
+```
+VillageService
+
+OwnerService
+
+KhewatService
+
+ParcelService
+
+OwnershipService
+
+PartitionService
+```
+
+Widgets communicate only with Services.
+
+---
+
+# Layer 3 — Repository
+
+Responsible for:
+
+- Reading data
+- Writing data
+- Persistence abstraction
+
+Repositories never contain GUI code.
+
+Repositories never know about Qt.
+
+---
+
+# Layer 4 — Domain
+
+Responsible for business concepts.
+
+Contains
+
+Entities
+
+Value Objects
+
+Business Rules
+
+Enumerations
+
+Domain Services
+
+Examples
+
+```
+Village
+
+Owner
+
+Khewat
+
+Parcel
+
+Ownership
+
+Area
+
+ParcelNumber
+
+Fraction
+```
+
+The Domain layer contains no GUI code.
+
+---
+
+# Layer 5 — Infrastructure
+
+Responsible for:
+
+SQLite
+
+Logging
+
+Export
+
+Import
+
+Configuration
+
+Repository implementations
+
+Infrastructure supports every other layer.
+
+---
+
+# Dependency Rules
+
+Allowed
+
+```
 Presentation
 
-&#x20;       │
+↓
 
-&#x20;       ▼
+Application
 
-Application Services
+↓
 
-&#x20;       │
+Repository
 
-&#x20;       ▼
-
-Repositories
-
-&#x20;       │
-
-&#x20;       ▼
+↓
 
 Domain
 
-&#x20;       │
-
-&#x20;       ▼
+↓
 
 Infrastructure
-
 ```
 
-
-
-Dependencies always flow downward.
-
-
-
-Lower layers never depend on higher layers.
-
-
-
-\---
-
-
-
-\# Package Structure
-
-
+Forbidden
 
 ```
+Presentation
 
-src/
+↓
 
-└── hrtk/
-
-&#x20;   ├── application/
-
-&#x20;   ├── domain/
-
-&#x20;   ├── repositories/
-
-&#x20;   ├── services/
-
-&#x20;   ├── presentation/
-
-&#x20;   ├── export/
-
-&#x20;   ├── infrastructure/
-
-&#x20;   └── utils/
-
+SQLite
 ```
 
+Forbidden
 
+```
+Widget
 
-Each package has a clearly defined responsibility.
+↓
 
+SQL
+```
 
+Forbidden
 
-\---
+```
+Dialog
 
+↓
 
+Repository
+```
 
-\# Layer Responsibilities
+---
 
+# Module Structure
 
+Every major module follows the same structure.
 
-\## Domain Layer
+Example
 
+```
+ownership/
 
+ownership_widget.py
 
-Contains business entities.
+ownership_dialog.py
 
+ownership_toolbar.py
 
+ownership_table.py
 
-Examples:
+ownership_model.py
+```
 
+Future modules follow exactly the same pattern.
 
+---
 
-\- Village
+# Stable Modules
 
-\- Owner
+The following modules are frozen.
 
-\- Khewat
+Dashboard
 
-\- Khasra
+Village
 
-\- Mutation
+Owner
 
+Khewat
 
+Khasra
 
-The Domain Layer contains no Qt code.
+Ownership
 
+These modules shall not receive feature work.
 
+---
 
-The Domain Layer contains no SQL code.
+# Active Modules
 
+Partition
 
+Mutation
 
-\---
+Tatima
 
+Reports
 
+GIS
 
-\## Repository Layer
+Future work happens only inside these modules.
 
+---
 
+# Business Logic Rule
 
-Responsible for persistence.
+Business rules belong only inside Services.
 
+Example
 
+Correct
 
-Responsibilities include:
+```
+OwnershipWidget
 
+↓
 
+OwnershipService.register()
 
-\- Create
+↓
 
-\- Read
+Repository
+```
 
-\- Update
+Incorrect
 
-\- Delete
+```
+OwnershipWidget
 
-\- Queries
+↓
 
+SQL INSERT
+```
 
+---
 
-Repositories never display dialogs.
+# User Interface Standard
 
+Every workspace shall contain:
 
+Toolbar
 
-Repositories never contain presentation logic.
+↓
 
+Selection Area
 
+↓
 
-\---
+Main Tables
 
+↓
 
+Summary
 
-\## Service Layer
+↓
 
+Validation
 
+↓
 
-Coordinates business workflows.
+Status
 
+Partition Workbench is the reference implementation.
 
+---
 
-Examples:
+# Naming Convention
 
+Internal Code
 
+Parcel
 
-\- VillageService
+Presentation
 
-\- OwnerService
+Khasra
 
-\- KhewatService
+Internal Code
 
-\- ExportService
+ParcelNumber
 
+Presentation
 
+Khasra Number
 
-Services coordinate repositories.
+Internal Code
 
+Ownership
 
+Presentation
 
-Services coordinate validation.
+Ownership Share
 
+Internal Code
 
+PartitionWidget
 
-Services coordinate business rules.
+Presentation
 
+Partition Workbench
 
+---
 
-\---
+# Logging
 
+Every important action shall be logged.
 
+Examples
 
-\## Presentation Layer
+Application started
 
+Village created
 
+Owner updated
 
-Responsible for user interaction.
+Partition saved
 
+Report exported
 
+Errors must include sufficient diagnostic information.
 
-Contains:
+---
 
+# Error Handling
 
+Errors should never crash the application.
 
-\- Widgets
+Errors should produce:
 
-\- Dialogs
+Status Message
 
-\- Models
+Log Entry
 
-\- Tables
+User Friendly Message
 
-\- Toolbars
+Unexpected exceptions should always be logged.
 
+---
 
+# Future Expansion
 
-Presentation never performs business calculations.
+The architecture must support:
 
+Mutation
 
+Tatima
 
-Presentation never accesses SQL directly.
+GIS
 
+Digital Maps
 
+Revenue Reports
 
-\---
+Court Cases
 
+Registry
 
+Audit Trail
 
-\## Infrastructure Layer
+without modification of stable modules.
 
+---
 
+# Architecture Goal
 
-Provides external integrations.
+The architecture shall remain:
 
+Simple
 
+Modular
 
-Examples:
+Readable
 
+Recoverable
 
+Scalable
 
-\- Excel
+Professional
 
-\- PDF
-
-\- CSV
-
-\- File System
-
-\- Logging
-
-
-
-Infrastructure is replaceable without affecting business logic.
-
-
-
-\---
-
+for the lifetime of the project.
