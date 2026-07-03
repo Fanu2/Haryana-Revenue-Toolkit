@@ -266,7 +266,7 @@ class AllocationService:
         allocation = PartitionAllocation(
             partition_case_id=case.id,
             owner_id=owner_id,
-            parcel_id=parcel_id,
+            parcel_number=parcel.number,
             allocated_area=area,
             remarks=remarks,
         )
@@ -299,8 +299,8 @@ class AllocationService:
         return self.allocate_area(
             case_id=case_id,
             owner_id=owner_id,
-            parcel_id=parcel.id,
+            parcel=parcel,
             area=parcel.area,
             remarks=remarks,
-        )
+    )
     

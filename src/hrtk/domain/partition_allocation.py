@@ -11,6 +11,9 @@ from uuid import UUID
 
 from hrtk.domain.base_entity import BaseEntity
 from hrtk.domain.value_objects.area import Area
+from hrtk.domain.value_objects.parcel_number import (
+    ParcelNumber,
+)
 
 
 @dataclass(
@@ -20,8 +23,8 @@ class PartitionAllocation(
     BaseEntity,
 ):
     """
-    Represents allocation of a portion of
-    a Parcel (Khasra) to one Owner during
+    Represents allocation of land from one
+    Khasra (Parcel) to one Owner during
     Partition proceedings.
     """
 
@@ -29,11 +32,15 @@ class PartitionAllocation(
 
     owner_id: UUID
 
-    parcel_id: UUID
+    parcel_number: ParcelNumber
 
     allocated_area: Area
 
     remarks: str = ""
+
+    # ---------------------------------------------------------
+    # Properties
+    # ---------------------------------------------------------
 
     @property
     def is_empty(
@@ -44,7 +51,8 @@ class PartitionAllocation(
         """
 
         return (
-            self.allocated_area.total_sarsai == 0
+            self.allocated_area.total_sarsai
+            == 0
         )
 
     @property
@@ -58,6 +66,10 @@ class PartitionAllocation(
         return bool(
             self.remarks.strip()
         )
+
+    # ---------------------------------------------------------
+    # Business Methods
+    # ---------------------------------------------------------
 
     def display_area(
         self,
@@ -90,6 +102,10 @@ class PartitionAllocation(
 
         self.remarks = remarks.strip()
 
+    # ---------------------------------------------------------
+    # Display
+    # ---------------------------------------------------------
+
     def summary(
         self,
     ) -> str:
@@ -99,7 +115,7 @@ class PartitionAllocation(
 
         return (
             f"Owner={self.owner_id} | "
-            f"Parcel={self.parcel_id} | "
+            f"Parcel={self.parcel_number} | "
             f"Area={self.display_area()}"
         )
 
@@ -111,9 +127,8 @@ class PartitionAllocation(
         """
 
         return (
-            f"{self.display_area()} "
-            f"allocated to "
-            f"{self.owner_id}"
+            f"{self.parcel_number} : "
+            f"{self.display_area()}"
         )
 
     def __repr__(
@@ -126,49 +141,7 @@ class PartitionAllocation(
         return (
             "PartitionAllocation("
             f"owner_id={self.owner_id}, "
-            f"parcel_id={self.parcel_id}, "
+            f"parcel_number={self.parcel_number}, "
             f"area={self.display_area()}"
             ")"
         )
-    
-    def summary(
-        self,
-    ) -> str:
-        """
-        Return a concise allocation summary.
-        """
-
-        return (
-            f"Owner={self.owner_id} | "
-            f"Parcel={self.parcel_id} | "
-            f"Area={self.display_area()}"
-        )
-
-    def __str__(
-        self,
-    ) -> str:
-        """
-        Human-readable representation.
-        """
-
-        return (
-            f"{self.display_area()} "
-            f"allocated to "
-            f"{self.owner_id}"
-        )
-
-    def __repr__(
-        self,
-    ) -> str:
-        """
-        Developer representation.
-        """
-
-        return (
-            "PartitionAllocation("
-            f"owner_id={self.owner_id}, "
-            f"parcel_id={self.parcel_id}, "
-            f"area={self.display_area()}"
-            ")"
-        )
-    

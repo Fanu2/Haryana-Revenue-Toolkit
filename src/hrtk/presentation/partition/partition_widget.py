@@ -6,6 +6,10 @@ Partition Workbench.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
+from PySide6.QtCore import Qt
+
 from PySide6.QtWidgets import (
     QComboBox,
     QGroupBox,
@@ -16,38 +20,16 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from PySide6.QtCore import Qt
-
 from hrtk.application.application_context import (
     ApplicationContext,
 )
 
-from hrtk.presentation.partition.partition_toolbar import (
-    PartitionToolbar,
-)
-
-from hrtk.presentation.partition.partition_owner_table import (
-    PartitionOwnerTable,
-)
-
-from hrtk.presentation.partition.partition_khasra_table import (
-    PartitionKhasraTable,
-)
-
-from hrtk.presentation.partition.summary_panel import (
-    SummaryPanel,
-)
-
-from hrtk.presentation.partition.validation_panel import (
-    ValidationPanel,
+from hrtk.domain.partition_allocation import (
+    PartitionAllocation,
 )
 
 from hrtk.presentation.partition.allocation_panel import (
     AllocationPanel,
-)
-
-from hrtk.presentation.partition.allocation_table import (
-    AllocationTable,
 )
 
 from hrtk.presentation.partition.allocation_summary import (
@@ -58,10 +40,40 @@ from hrtk.presentation.partition.allocation_validation import (
     AllocationValidation,
 )
 
+from hrtk.presentation.partition.partition_allocation_table import (
+    PartitionAllocationTable,
+)
 
-class PartitionWidget(QWidget):
+from hrtk.presentation.partition.partition_khasra_table import (
+    PartitionKhasraTable,
+)
+
+from hrtk.presentation.partition.partition_owner_table import (
+    PartitionOwnerTable,
+)
+
+from hrtk.presentation.partition.partition_toolbar import (
+    PartitionToolbar,
+)
+
+from hrtk.presentation.partition.summary_panel import (
+    SummaryPanel,
+)
+
+from hrtk.presentation.partition.validation_panel import (
+    ValidationPanel,
+)
+
+
+class PartitionWidget(
+    QWidget,
+):
     """
     Main Partition Workbench.
+
+    Coordinates the user interface for
+    partition proceedings while delegating
+    business rules to the service layer.
     """
 
     def __init__(
@@ -72,13 +84,33 @@ class PartitionWidget(QWidget):
 
         super().__init__(parent)
 
+        #
+        # Context
+        #
+
         self._context = context
+
+        #
+        # Runtime State
+        #
+
+        self._allocations: list[
+            PartitionAllocation
+        ] = []
+
+        #
+        # Build User Interface
+        #
 
         self._create_widgets()
 
         self._build_layout()
 
         self._connect_signals()
+
+        #
+        # Load Initial Data
+        #
 
         self._load_villages()
 
@@ -89,6 +121,14 @@ class PartitionWidget(QWidget):
     def _create_widgets(
         self,
     ) -> None:
+        """
+        Create all widgets used by the
+        Partition Workbench.
+        """
+
+        #
+        # Selection
+        #
 
         self._village_combo = QComboBox()
 
@@ -96,31 +136,40 @@ class PartitionWidget(QWidget):
 
         self._khewat_combo = QComboBox()
 
-        self._toolbar = PartitionToolbar()
+        #
+        # Workbench
+        #
 
-        self._owner_table = PartitionOwnerTable()
-
-        self._khasra_table = PartitionKhasraTable()
-
-        self._summary = SummaryPanel()
-
-        self._validation = ValidationPanel()
-
-        self._status = QLabel(
-            "Ready"
+        self._toolbar = (
+            PartitionToolbar()
         )
 
-        
-    #
-    # Allocation
-    #
+        self._owner_table = (
+            PartitionOwnerTable()
+        )
+
+        self._khasra_table = (
+            PartitionKhasraTable()
+        )
 
         self._allocation_panel = (
             AllocationPanel()
         )
 
         self._allocation_table = (
-            AllocationTable()
+            PartitionAllocationTable()
+        )
+
+        #
+        # Summary
+        #
+
+        self._summary = (
+            SummaryPanel()
+        )
+
+        self._validation = (
+            ValidationPanel()
         )
 
         self._allocation_summary = (
@@ -131,6 +180,22 @@ class PartitionWidget(QWidget):
             AllocationValidation()
         )
 
+        #
+        # Status
+        #
+
+        self._status = QLabel(
+            "Ready"
+        )
+
+        #
+        # Initial State
+        #
+
+        self._allocation_summary.clear()
+
+        self._allocation_validation.show_default_state()
+
     # ---------------------------------------------------------
     # Layout
     # ---------------------------------------------------------
@@ -138,9 +203,12 @@ class PartitionWidget(QWidget):
     def _build_layout(
         self,
     ) -> None:
+        """
+        Build the Partition Workbench layout.
+        """
 
         #
-        # Top Selection Row
+        # Selection Bar
         #
 
         selector_layout = QHBoxLayout()
@@ -171,36 +239,36 @@ class PartitionWidget(QWidget):
 
         selector_layout.addStretch()
 
-    #
-    # Main Work Area
-    #
+        #
+        # Main Workspace
+        #
 
         splitter = QSplitter(
-            Qt.Horizontal
+            Qt.Horizontal,
         )
 
-    #
-    # Left : Owners
-    #
+        #
+        # Owner Table
+        #
 
         splitter.addWidget(
-            self._owner_table
+            self._owner_table,
         )
 
-    #
-    # Centre : Khasras
-    #
+        #
+        # Khasra Table
+        #
 
         splitter.addWidget(
-            self._khasra_table
+            self._khasra_table,
         )
 
-    #
-    # Right : Allocation Panel
-    #
+        #
+        # Allocation Panel
+        #
 
         splitter.addWidget(
-            self._allocation_panel
+            self._allocation_panel,
         )
 
         splitter.setStretchFactor(
@@ -214,96 +282,98 @@ class PartitionWidget(QWidget):
         )
 
         splitter.setStretchFactor(
-        2,
-        1,
+            2,
+            1,
         )
 
-    #
-    # Allocation Register
-    #
+        #
+        # Allocation Register
+        #
 
         allocation_group = QGroupBox(
-            "Allocation Register"
+            "Allocation Register",
         )
 
         allocation_layout = QVBoxLayout()
 
         allocation_layout.addWidget(
-            self._allocation_table
+            self._allocation_table,
         )
 
         allocation_group.setLayout(
-            allocation_layout
+            allocation_layout,
         )
 
-    #
-    # Bottom Panels
-    #
+        #
+        # Bottom Information Panels
+        #
 
         bottom_layout = QHBoxLayout()
 
         bottom_layout.addWidget(
-            self._summary
+            self._summary,
         )
 
         bottom_layout.addWidget(
-            self._validation
+            self._validation,
         )
 
         bottom_layout.addWidget(
-            self._allocation_summary
+            self._allocation_summary,
         )
 
         bottom_layout.addWidget(
-        self._allocation_validation
+            self._allocation_validation,
         )
 
-    #
-    # Main Layout
-    #
+        #
+        # Main Layout
+        #
 
         layout = QVBoxLayout()
 
         layout.addWidget(
-            self._toolbar
+            self._toolbar,
         )
 
         layout.addLayout(
-            selector_layout
+            selector_layout,
         )
 
         layout.addWidget(
-            splitter
+            splitter,
         )
 
         layout.addWidget(
-            allocation_group
+            allocation_group,
         )
 
         layout.addLayout(
-            bottom_layout
+            bottom_layout,
         )
 
         layout.addWidget(
-            self._status
+            self._status,
         )
 
         self.setLayout(
-            layout
+            layout,
         )
 
-    #
-    # Initial State
-    #
+    # ---------------------------------------------------------
+    # Signals
+    # ---------------------------------------------------------
 
-        self._allocation_summary.clear()
-
-        self._allocation_validation.show_default_state()
-    
-    
     def _connect_signals(
         self,
     ) -> None:
+        """
+        Connect all widget signals.
+        """
+
+        #
+        # Selection
+        #
 
         self._village_combo.currentIndexChanged.connect(
             self._load_khewats,
@@ -313,30 +383,21 @@ class PartitionWidget(QWidget):
             self._load_partition_data,
         )
 
-
-        self._allocation_panel.allocate_requested.connect(
-            self._allocate,
-        )
-
-    #
-    # Owner Selection
-    #
+        #
+        # Workbench
+        #
 
         self._owner_table.selectionModel().selectionChanged.connect(
             self._owner_selected,
         )
 
-    #
-    # Khasra Selection
-    #
-
         self._khasra_table.selectionModel().selectionChanged.connect(
             self._khasra_selected,
         )
 
-    #
-    # Allocate
-    #
+        #
+        # Allocation
+        #
 
         self._allocation_panel.allocate_requested.connect(
             self._allocate,
@@ -350,7 +411,7 @@ class PartitionWidget(QWidget):
         self,
     ) -> None:
         """
-        Load all villages.
+        Load available villages.
         """
 
         self._village_combo.blockSignals(
@@ -360,7 +421,9 @@ class PartitionWidget(QWidget):
         self._village_combo.clear()
 
         villages = (
-            self._context.village_service.all()
+            self._context
+            .village_service
+            .all()
         )
 
         for village in villages:
@@ -375,18 +438,18 @@ class PartitionWidget(QWidget):
         )
 
         #
-        # Temporary Jamabandi values
+        # Temporary Jamabandi Years
         #
 
         self._jamabandi_combo.clear()
 
         self._jamabandi_combo.addItems(
-            [
+            (
                 "2023-24",
                 "2020-21",
                 "2017-18",
                 "2014-15",
-            ]
+            )
         )
 
         if self._village_combo.count():
@@ -419,10 +482,13 @@ class PartitionWidget(QWidget):
             return
 
         for khewat in (
-            self._context.khewat_service.all()
+            self._context
+            .khewat_service
+            .all()
         ):
 
             if khewat.village_id != village_id:
+
                 continue
 
             self._khewat_combo.addItem(
@@ -438,16 +504,11 @@ class PartitionWidget(QWidget):
 
             self._load_partition_data()
 
-    # ---------------------------------------------------------
-    # Partition Workbench
-    # ---------------------------------------------------------
-
     def _load_partition_data(
         self,
     ) -> None:
         """
-        Load all information required by the
-        Partition Workbench.
+        Load the complete Partition Workbench.
         """
 
         khewat_id = (
@@ -462,9 +523,9 @@ class PartitionWidget(QWidget):
 
             return
 
-    # ---------------------------------------------------------
-    # Load Ownership Records
-    # ---------------------------------------------------------
+        #
+        # Ownership
+        #
 
         ownerships = (
             self._context
@@ -474,145 +535,124 @@ class PartitionWidget(QWidget):
             )
         )
 
-    # ---------------------------------------------------------
-    # Load Parcels (Temporary)
-    #
-    # Stable Parcel module does not yet support
-    # Khewat filtering, so load all parcels.
-    # ---------------------------------------------------------
+        #
+        # Parcels
+        #
+        # Stable Parcel module currently
+        # returns all parcels.
+        #
 
-        khasras = []
-
-        if hasattr(
-            self._context,
-            "parcel_service",
-        ):
-
-            khasras = (
+        khasras = (
             self._context
             .parcel_service
             .list()
         )
-            
-        print("PARCEL COUNT =", len(khasras))
-        for p in khasras:
-            print(p)
 
-    # ---------------------------------------------------------
-    # Owner Lookup
-    # ---------------------------------------------------------
+        #
+        # Owner Lookup
+        #
 
-        owner_names = {}
+        owner_names: dict[
+            str,
+            str,
+        ] = {}
 
         for owner in (
-            self._context.owner_service.all()
+            self._context
+            .owner_service
+            .all()
         ):
 
             owner_names[
                 str(owner.id)
             ] = owner.display_name
 
-    # ---------------------------------------------------------
-    # Populate Owner Table
-    # ---------------------------------------------------------
+        #
+        # Owner Table
+        #
 
-        if hasattr(
-            self._owner_table,
-            "set_ownerships",
-        ):
+        self._owner_table.set_ownerships(
+            ownerships,
+            owner_names,
+        )
 
-            self._owner_table.set_ownerships(
-                ownerships,
-                owner_names,
-            )
+        #
+        # Khasra Table
+        #
 
-    # ---------------------------------------------------------
-    # Populate Khasra Table
-    # ---------------------------------------------------------
-
-        if hasattr(
-            self._khasra_table,
-            "set_khasras",
-        ):
-
-            self._khasra_table.set_khasras(
+        self._khasra_table.set_khasras(
             khasras,
-            )
-
-        print(
-            "ROWS =",
-            self._khasra_table.model.rowCount(),
         )
 
-    # ---------------------------------------------------------
-    # Summary Panel
-    # ---------------------------------------------------------
+        #
+        # Summary
+        #
 
-        if hasattr(
-            self._summary,
-            "update_summary",
-        ):
-
-            self._summary.update_summary(
-                ownerships,
-                khasras,
+        self._summary.update_summary(
+            ownerships,
+            khasras,
         )
 
-    # ---------------------------------------------------------
-    # Validation Panel
-    # ---------------------------------------------------------
+        #
+        # Validation
+        #
 
-        if hasattr(
-            self._validation,
-            "clear",
-        ):
+        self._validation.clear()
 
-            self._validation.clear()
-
-    # ---------------------------------------------------------
-    # Status
-    # ---------------------------------------------------------
+        #
+        # Status
+        #
 
         self._status.setText(
-            f"Loaded {len(ownerships)} Owners, "
+            f"Loaded "
+            f"{len(ownerships)} Owners, "
             f"{len(khasras)} Khasras."
         )
 
-    def _allocate(
-        self,
-    ) -> None:
-        """
-        Temporary allocation placeholder.
-        """
-
-        self._status.setText(
-            "Allocation Engine coming next."
-        )
+    # ---------------------------------------------------------
+    # Selection
+    # ---------------------------------------------------------
 
     def _owner_selected(
         self,
     ) -> None:
         """
-        Ownership selection changed.
+        Handle Owner selection changes.
         """
 
-        name = (
+        ownership = (
+            self._owner_table.selected_ownership()
+        )
+
+        if ownership is None:
+
+            self._allocation_panel.set_owner(
+                "---",
+            )
+
+            self._status.setText(
+                "No owner selected."
+            )
+
+            return
+
+        owner_name = (
             self._owner_table.selected_owner_name()
         )
 
         self._allocation_panel.set_owner(
-            name,
+            owner_name,
         )
 
         self._status.setText(
-            f"Owner selected: {name}"
+            f"Owner selected: {owner_name}"
         )
 
     def _khasra_selected(
         self,
     ) -> None:
         """
-        Khasra selection changed.
+        Handle Khasra selection changes.
         """
 
         parcel = (
@@ -622,23 +662,134 @@ class PartitionWidget(QWidget):
         if parcel is None:
 
             self._allocation_panel.set_khasra(
-                "---"
+                "---",
             )
 
             self._allocation_panel.set_remaining_area(
-                "0K-0M-0S"
+                "0K-0M-0S",
+            )
+
+            self._status.setText(
+                "No Khasra selected."
             )
 
             return
 
         self._allocation_panel.set_khasra(
-            str(parcel.number)
+            str(
+                parcel.number,
+            ),
         )
 
         self._allocation_panel.set_remaining_area(
-            parcel.area.display()
+            parcel.area.display(),
         )
 
         self._status.setText(
-            f"Khasra selected: {parcel.number}"
+            (
+                "Khasra selected: "
+                f"{parcel.number}"
+            ),
         )
+
+    # ---------------------------------------------------------
+    # Allocation
+    # ---------------------------------------------------------
+
+    def _allocate(
+        self,
+    ) -> None:
+        """
+        Create an in-memory allocation from the
+        currently selected Owner and Khasra.
+        """
+
+        ownership = (
+            self._owner_table.selected_ownership()
+        )
+
+        if ownership is None:
+
+            self._status.setText(
+                "Select an owner."
+            )
+
+            return
+
+        parcel = (
+            self._khasra_table.selected_khasra()
+        )
+
+        if parcel is None:
+
+            self._status.setText(
+                "Select a Khasra."
+            )
+
+            return
+
+        allocation = PartitionAllocation(
+            id=uuid4(),
+            partition_case_id=uuid4(),
+            owner_id=ownership.owner_id,
+            parcel_number=parcel.number,
+            allocated_area=parcel.area,
+            remarks="",
+        )
+
+        self._allocations.append(
+            allocation,
+        )
+
+        self._refresh_allocation_register()
+
+        self._status.setText(
+            "Allocation created."
+        )
+
+    def _refresh_allocation_register(
+        self,
+    ) -> None:
+        """
+        Refresh the Allocation Register.
+        """
+
+        owner_names: dict[
+            str,
+            str,
+        ] = {}
+
+        for owner in (
+            self._context
+            .owner_service
+            .all()
+        ):
+
+            owner_names[
+                str(owner.id)
+            ] = owner.display_name
+
+        parcel_numbers: dict[
+            str,
+            str,
+        ] = {}
+
+        for parcel in (
+            self._context
+            .parcel_service
+            .list()
+        ):
+
+            parcel_numbers[
+                str(parcel.number)
+            ] = str(
+                parcel.number
+            )
+
+        self._allocation_table.set_allocations(
+            self._allocations,
+            owner_names,
+            parcel_numbers,
+        )
+
+        self._allocation_table.refresh()
