@@ -1,0 +1,450 @@
+"""
+Haryana Revenue Toolkit (HRTK)
+
+Partition Workbench.
+"""
+
+from __future__ import annotations
+
+from PySide6.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QSplitter,
+    QVBoxLayout,
+    QWidget,
+)
+
+from PySide6.QtCore import Qt
+
+from hrtk.application.application_context import (
+    ApplicationContext,
+)
+
+from hrtk.presentation.partition.partition_toolbar import (
+    PartitionToolbar,
+)
+
+from hrtk.presentation.partition.partition_owner_table import (
+    PartitionOwnerTable,
+)
+
+from hrtk.presentation.partition.partition_khasra_table import (
+    PartitionKhasraTable,
+)
+
+from hrtk.presentation.partition.summary_panel import (
+    SummaryPanel,
+)
+
+from hrtk.presentation.partition.validation_panel import (
+    ValidationPanel,
+)
+
+
+class PartitionWidget(QWidget):
+    """
+    Main Partition Workbench.
+    """
+
+    def __init__(
+        self,
+        context: ApplicationContext,
+        parent=None,
+    ) -> None:
+
+        super().__init__(parent)
+
+        self._context = context
+
+        self._create_widgets()
+
+        self._build_layout()
+
+        self._connect_signals()
+
+        self._load_villages()
+
+    # ---------------------------------------------------------
+    # Widget Creation
+    # ---------------------------------------------------------
+
+    def _create_widgets(
+        self,
+    ) -> None:
+
+        self._village_combo = QComboBox()
+
+        self._jamabandi_combo = QComboBox()
+
+        self._khewat_combo = QComboBox()
+
+        self._toolbar = PartitionToolbar()
+
+        self._owner_table = PartitionOwnerTable()
+
+        self._khasra_table = PartitionKhasraTable()
+
+        self._summary = SummaryPanel()
+
+        self._validation = ValidationPanel()
+
+        self._status = QLabel(
+            "Ready"
+        )
+
+    # ---------------------------------------------------------
+    # Layout
+    # ---------------------------------------------------------
+
+    def _build_layout(
+        self,
+    ) -> None:
+
+        #
+        # Top Selection Row
+        #
+
+        selector_layout = QHBoxLayout()
+
+        selector_layout.addWidget(
+            QLabel("Village")
+        )
+
+        selector_layout.addWidget(
+            self._village_combo
+        )
+
+        selector_layout.addWidget(
+            QLabel("Jamabandi")
+        )
+
+        selector_layout.addWidget(
+            self._jamabandi_combo
+        )
+
+        selector_layout.addWidget(
+            QLabel("Khewat")
+        )
+
+        selector_layout.addWidget(
+            self._khewat_combo
+        )
+
+        selector_layout.addStretch()
+
+        #
+        # Main Splitter
+        #
+
+        splitter = QSplitter(
+            Qt.Horizontal
+        )
+
+        splitter.addWidget(
+            self._owner_table
+        )
+
+        splitter.addWidget(
+            self._khasra_table
+        )
+
+        splitter.setStretchFactor(
+            0,
+            1,
+        )
+
+        splitter.setStretchFactor(
+            1,
+            2,
+        )
+
+        #
+        # Bottom Panels
+        #
+
+        bottom_layout = QHBoxLayout()
+
+        bottom_layout.addWidget(
+            self._summary
+        )
+
+        bottom_layout.addWidget(
+            self._validation
+        )
+
+        #
+        # Main Layout
+        #
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(
+            self._toolbar
+        )
+
+        layout.addLayout(
+            selector_layout
+        )
+
+        layout.addWidget(
+            splitter
+        )
+
+        layout.addLayout(
+            bottom_layout
+        )
+
+        layout.addWidget(
+            self._status
+        )
+
+        self.setLayout(
+            layout
+        )
+    # ---------------------------------------------------------
+    # Signals
+    # ---------------------------------------------------------
+
+    def _connect_signals(
+        self,
+    ) -> None:
+
+        self._village_combo.currentIndexChanged.connect(
+            self._load_khewats,
+        )
+
+        self._khewat_combo.currentIndexChanged.connect(
+            self._load_partition_data,
+        )
+
+    # ---------------------------------------------------------
+    # Loading
+    # ---------------------------------------------------------
+
+    def _load_villages(
+        self,
+    ) -> None:
+        """
+        Load all villages.
+        """
+
+        self._village_combo.blockSignals(
+            True,
+        )
+
+        self._village_combo.clear()
+
+        villages = (
+            self._context.village_service.all()
+        )
+
+        for village in villages:
+
+            self._village_combo.addItem(
+                village.name,
+                village.id,
+            )
+
+        self._village_combo.blockSignals(
+            False,
+        )
+
+        #
+        # Temporary Jamabandi values
+        #
+
+        self._jamabandi_combo.clear()
+
+        self._jamabandi_combo.addItems(
+            [
+                "2023-24",
+                "2020-21",
+                "2017-18",
+                "2014-15",
+            ]
+        )
+
+        if self._village_combo.count():
+
+            self._load_khewats()
+
+    def _load_khewats(
+        self,
+    ) -> None:
+        """
+        Load Khewats for the selected village.
+        """
+
+        self._khewat_combo.blockSignals(
+            True,
+        )
+
+        self._khewat_combo.clear()
+
+        village_id = (
+            self._village_combo.currentData()
+        )
+
+        if village_id is None:
+
+            self._khewat_combo.blockSignals(
+                False,
+            )
+
+            return
+
+        for khewat in (
+            self._context.khewat_service.all()
+        ):
+
+            if khewat.village_id != village_id:
+                continue
+
+            self._khewat_combo.addItem(
+                khewat.display_name,
+                khewat.id,
+            )
+
+        self._khewat_combo.blockSignals(
+            False,
+        )
+
+        if self._khewat_combo.count():
+
+            self._load_partition_data()
+
+    # ---------------------------------------------------------
+    # Partition Workbench
+    # ---------------------------------------------------------
+
+    def _load_partition_data(
+        self,
+    ) -> None:
+        """
+        Load all information required by the
+        Partition Workbench.
+        """
+
+        khewat_id = (
+            self._khewat_combo.currentData()
+        )
+
+        if khewat_id is None:
+
+            self._status.setText(
+                "No Khewat selected."
+            )
+
+            return
+
+        #
+        # Load Owners
+        #
+
+        ownerships = (
+            self._context
+            .ownership_service
+            .by_khewat(
+                khewat_id,
+            )
+        )
+
+        #
+        # Load Khasras
+        #
+
+        khasras = []
+
+        if hasattr(
+            self._context,
+            "khasra_service",
+        ):
+
+            if hasattr(
+                self._context.khasra_service,
+                "by_khewat",
+            ):
+
+                khasras = (
+                    self._context
+                    .khasra_service
+                    .by_khewat(
+                        khewat_id,
+                    )
+                )
+
+        #
+        # Populate Owner Table
+        #
+
+        if hasattr(
+            self._owner_table,
+            "set_ownerships",
+        ):
+
+            owner_names = {}
+
+            for owner in self._context.owner_service.all():
+
+                owner_names[
+                    str(owner.id)
+                ] = owner.display_name
+
+        self._owner_table.set_ownerships(
+            ownerships,
+            owner_names,
+        )
+
+        #
+        # Populate Khasra Table
+        #
+
+        if hasattr(
+            self._khasra_table,
+            "set_khasras",
+        ):
+
+            self._khasra_table.set_khasras(
+                khasras,
+            )
+
+        #
+        # Summary Panel
+        #
+
+        if hasattr(
+            self._summary,
+            "update_summary",
+        ):
+
+            self._summary.update_summary(
+                ownerships,
+                khasras,
+            )
+
+        #
+        # Validation Panel
+        #
+
+        if hasattr(
+            self._validation,
+            "clear",
+        ):
+
+            self._validation.clear()
+
+        #
+        # Status
+        #
+
+        self._status.setText(
+
+            f"Loaded "
+
+            f"{len(ownerships)} Owners, "
+
+            f"{len(khasras)} Khasras."
+
+        )
+

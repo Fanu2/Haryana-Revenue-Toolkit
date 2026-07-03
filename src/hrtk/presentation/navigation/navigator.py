@@ -41,7 +41,7 @@ class Navigator(QTreeWidget):
         revenue.addChild(QTreeWidgetItem(["Ownership"]))
         revenue.addChild(
             QTreeWidgetItem(
-                ["Partition Workspace"]
+                ["Partition"]
             )
         )
 
