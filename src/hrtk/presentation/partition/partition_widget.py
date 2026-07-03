@@ -315,7 +315,31 @@ class PartitionWidget(QWidget):
 
 
         self._allocation_panel.allocate_requested.connect(
-        self._allocate,
+            self._allocate,
+        )
+
+    #
+    # Owner Selection
+    #
+
+        self._owner_table.selectionModel().selectionChanged.connect(
+            self._owner_selected,
+        )
+
+    #
+    # Khasra Selection
+    #
+
+        self._khasra_table.selectionModel().selectionChanged.connect(
+            self._khasra_selected,
+        )
+
+    #
+    # Allocate
+    #
+
+        self._allocation_panel.allocate_requested.connect(
+            self._allocate,
         )
 
     # ---------------------------------------------------------
@@ -563,4 +587,80 @@ class PartitionWidget(QWidget):
 
         self._status.setText(
             "Allocation Engine coming next."
+        )
+
+    def _owner_selected(
+        self,
+    ) -> None:
+        """
+        Ownership selection changed.
+        """
+
+        ownership = (
+            self._owner_table.selected_ownership()
+        )
+
+        if ownership is None:
+
+            self._allocation_panel.set_owner(
+                "---"
+            )
+
+            return
+
+        owner = (
+            self._context.owner_service.get(
+                ownership.owner_id,
+            )
+        )
+
+        if owner is None:
+
+            self._allocation_panel.set_owner(
+                "Unknown Owner"
+            )
+
+            return
+
+        self._allocation_panel.set_owner(
+            owner.display_name
+        )
+
+        self._status.setText(
+            f"Owner selected: {owner.display_name}"
+        )
+
+    def _khasra_selected(
+        self,
+    ) -> None:
+        """
+        Khasra selection changed.
+        """
+
+        parcel = (
+            self._khasra_table.selected_khasra()
+        )
+
+        if parcel is None:
+
+            self._allocation_panel.set_khasra(
+                "---"
+            )
+
+            self._allocation_panel.set_remaining_area(
+                "0K-0M-0S"
+            )
+
+            return
+
+        self._allocation_panel.set_khasra(
+            str(parcel.number)
+        )
+
+        self._allocation_panel.set_remaining_area(
+            parcel.area.display()
+        )
+
+        self._status.setText(
+            f"Khasra selected: {parcel.number}"
         )
