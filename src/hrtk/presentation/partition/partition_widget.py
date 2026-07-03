@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import (
     QComboBox,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QSplitter,
@@ -39,6 +40,22 @@ from hrtk.presentation.partition.summary_panel import (
 
 from hrtk.presentation.partition.validation_panel import (
     ValidationPanel,
+)
+
+from hrtk.presentation.partition.allocation_panel import (
+    AllocationPanel,
+)
+
+from hrtk.presentation.partition.allocation_table import (
+    AllocationTable,
+)
+
+from hrtk.presentation.partition.allocation_summary import (
+    AllocationSummary,
+)
+
+from hrtk.presentation.partition.allocation_validation import (
+    AllocationValidation,
 )
 
 
@@ -93,6 +110,27 @@ class PartitionWidget(QWidget):
             "Ready"
         )
 
+        
+    #
+    # Allocation
+    #
+
+        self._allocation_panel = (
+            AllocationPanel()
+        )
+
+        self._allocation_table = (
+            AllocationTable()
+        )
+
+        self._allocation_summary = (
+            AllocationSummary()
+        )
+
+        self._allocation_validation = (
+            AllocationValidation()
+        )
+
     # ---------------------------------------------------------
     # Layout
     # ---------------------------------------------------------
@@ -133,25 +171,41 @@ class PartitionWidget(QWidget):
 
         selector_layout.addStretch()
 
-        #
-        # Main Splitter
-        #
+    #
+    # Main Work Area
+    #
 
         splitter = QSplitter(
             Qt.Horizontal
         )
 
+    #
+    # Left : Owners
+    #
+
         splitter.addWidget(
             self._owner_table
         )
+
+    #
+    # Centre : Khasras
+    #
 
         splitter.addWidget(
             self._khasra_table
         )
 
+    #
+    # Right : Allocation Panel
+    #
+
+        splitter.addWidget(
+            self._allocation_panel
+        )
+
         splitter.setStretchFactor(
             0,
-            1,
+            2,
         )
 
         splitter.setStretchFactor(
@@ -159,9 +213,32 @@ class PartitionWidget(QWidget):
             2,
         )
 
-        #
-        # Bottom Panels
-        #
+        splitter.setStretchFactor(
+        2,
+        1,
+        )
+
+    #
+    # Allocation Register
+    #
+
+        allocation_group = QGroupBox(
+            "Allocation Register"
+        )
+
+        allocation_layout = QVBoxLayout()
+
+        allocation_layout.addWidget(
+            self._allocation_table
+        )
+
+        allocation_group.setLayout(
+            allocation_layout
+        )
+
+    #
+    # Bottom Panels
+    #
 
         bottom_layout = QHBoxLayout()
 
@@ -173,9 +250,17 @@ class PartitionWidget(QWidget):
             self._validation
         )
 
-        #
-        # Main Layout
-        #
+        bottom_layout.addWidget(
+            self._allocation_summary
+        )
+
+        bottom_layout.addWidget(
+        self._allocation_validation
+        )
+
+    #
+    # Main Layout
+    #
 
         layout = QVBoxLayout()
 
@@ -191,6 +276,10 @@ class PartitionWidget(QWidget):
             splitter
         )
 
+        layout.addWidget(
+            allocation_group
+        )
+
         layout.addLayout(
             bottom_layout
         )
@@ -202,10 +291,16 @@ class PartitionWidget(QWidget):
         self.setLayout(
             layout
         )
-    # ---------------------------------------------------------
-    # Signals
-    # ---------------------------------------------------------
 
+    #
+    # Initial State
+    #
+
+        self._allocation_summary.clear()
+
+        self._allocation_validation.show_default_state()
+    
+    
     def _connect_signals(
         self,
     ) -> None:
@@ -216,6 +311,11 @@ class PartitionWidget(QWidget):
 
         self._khewat_combo.currentIndexChanged.connect(
             self._load_partition_data,
+        )
+
+
+        self._allocation_panel.allocate_requested.connect(
+        self._allocate,
         )
 
     # ---------------------------------------------------------
@@ -452,4 +552,15 @@ class PartitionWidget(QWidget):
         self._status.setText(
             f"Loaded {len(ownerships)} Owners, "
             f"{len(khasras)} Khasras."
+        )
+
+    def _allocate(
+        self,
+    ) -> None:
+        """
+        Temporary allocation placeholder.
+        """
+
+        self._status.setText(
+            "Allocation Engine coming next."
         )
