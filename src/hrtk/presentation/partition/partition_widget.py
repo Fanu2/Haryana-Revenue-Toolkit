@@ -28,27 +28,27 @@ from hrtk.domain.partition_allocation import (
     PartitionAllocation,
 )
 
-from hrtk.presentation.partition.allocation_panel import (
+from hrtk.presentation.partition.panels.allocation_panel import (
     AllocationPanel,
 )
 
-from hrtk.presentation.partition.allocation_summary import (
+from hrtk.presentation.partition.panels.allocation_summary import (
     AllocationSummary,
 )
 
-from hrtk.presentation.partition.allocation_validation import (
+from hrtk.presentation.partition.panels.allocation_validation import (
     AllocationValidation,
 )
 
-from hrtk.presentation.partition.partition_allocation_table import (
+from hrtk.presentation.partition.tables.partition_allocation_table import (
     PartitionAllocationTable,
 )
 
-from hrtk.presentation.partition.partition_khasra_table import (
+from hrtk.presentation.partition.tables.partition_khasra_table import (
     PartitionKhasraTable,
 )
 
-from hrtk.presentation.partition.partition_owner_table import (
+from hrtk.presentation.partition.tables.partition_owner_table import (
     PartitionOwnerTable,
 )
 
@@ -56,11 +56,11 @@ from hrtk.presentation.partition.partition_toolbar import (
     PartitionToolbar,
 )
 
-from hrtk.presentation.partition.summary_panel import (
+from hrtk.presentation.partition.panels.summary_panel import (
     SummaryPanel,
 )
 
-from hrtk.presentation.partition.validation_panel import (
+from hrtk.presentation.partition.panels.validation_panel import (
     ValidationPanel,
 )
 

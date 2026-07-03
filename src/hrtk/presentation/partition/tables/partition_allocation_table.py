@@ -1,7 +1,7 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Partition Khasra Table.
+Partition Allocation Table.
 """
 
 from __future__ import annotations
@@ -12,18 +12,20 @@ from PySide6.QtWidgets import (
     QTableView,
 )
 
-from hrtk.domain.parcel import Parcel
+from hrtk.domain.partition_allocation import (
+    PartitionAllocation,
+)
 
-from hrtk.presentation.partition.partition_khasra_model import (
-    PartitionKhasraModel,
+from hrtk.presentation.partition.models.partition_allocation_model import (
+    PartitionAllocationModel,
 )
 
 
-class PartitionKhasraTable(
+class PartitionAllocationTable(
     QTableView,
 ):
     """
-    Khasra table used by the
+    Allocation Register table used by the
     Partition Workbench.
     """
 
@@ -34,7 +36,7 @@ class PartitionKhasraTable(
 
         super().__init__(parent)
 
-        self._model = PartitionKhasraModel(
+        self._model = PartitionAllocationModel(
             self,
         )
 
@@ -51,6 +53,9 @@ class PartitionKhasraTable(
     def _configure(
         self,
     ) -> None:
+        """
+        Configure the table appearance and behavior.
+        """
 
         self.setSelectionBehavior(
             QAbstractItemView.SelectRows,
@@ -103,21 +108,44 @@ class PartitionKhasraTable(
         )
 
     # ---------------------------------------------------------
-    # Public
+    # Data
+    # ---------------------------------------------------------
+
+    def set_allocations(
+        self,
+        allocations,
+        owner_names,
+        parcel_numbers,
+    ) -> None:
+        """
+        Load allocations into the table.
+        """
+
+        self._model.set_allocations(
+            allocations,
+            owner_names,
+            parcel_numbers,
+        )
+
+    # ---------------------------------------------------------
+    # Public API
     # ---------------------------------------------------------
 
     @property
     def model(
         self,
-    ) -> PartitionKhasraModel:
+    ) -> PartitionAllocationModel:
+        """
+        Return the underlying table model.
+        """
 
         return self._model
 
-    def selected_khasra(
+    def selected_allocation(
         self,
-    ) -> Parcel | None:
+    ) -> PartitionAllocation | None:
         """
-        Return the selected Khasra.
+        Return the selected allocation.
         """
 
         indexes = (
@@ -129,27 +157,33 @@ class PartitionKhasraTable(
 
             return None
 
-        return self._model.khasra_at(
+        return self._model.allocation_at(
             indexes[0].row(),
         )
+
+    def refresh(
+        self,
+    ) -> None:
+        """
+        Refresh the table view.
+        """
+
+        self.viewport().update()
 
     def clear_selection(
         self,
     ) -> None:
+        """
+        Clear the current selection.
+        """
 
         self.clearSelection()
 
     def clear(
         self,
     ) -> None:
+        """
+        Remove all allocations.
+        """
 
         self._model.clear()
-
-    def set_khasras(
-        self,
-        khasras,
-    ) -> None:
-
-        self._model.set_khasras(
-            khasras,
-        )

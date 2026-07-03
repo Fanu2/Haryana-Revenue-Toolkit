@@ -1,10 +1,14 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Partition Allocation Table.
+Partition Owner Table.
 """
 
 from __future__ import annotations
+
+from PySide6.QtCore import (
+    Qt,
+)
 
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -12,20 +16,18 @@ from PySide6.QtWidgets import (
     QTableView,
 )
 
-from hrtk.domain.partition_allocation import (
-    PartitionAllocation,
+from hrtk.domain.ownership import Ownership
+
+from hrtk.presentation.partition.models.partition_owner_model import (
+    PartitionOwnerModel,
 )
 
-from hrtk.presentation.partition.partition_allocation_model import (
-    PartitionAllocationModel,
-)
 
-
-class PartitionAllocationTable(
+class PartitionOwnerTable(
     QTableView,
 ):
     """
-    Allocation Register table used by the
+    Owner table used by the
     Partition Workbench.
     """
 
@@ -36,7 +38,7 @@ class PartitionAllocationTable(
 
         super().__init__(parent)
 
-        self._model = PartitionAllocationModel(
+        self._model = PartitionOwnerModel(
             self,
         )
 
@@ -53,9 +55,6 @@ class PartitionAllocationTable(
     def _configure(
         self,
     ) -> None:
-        """
-        Configure the table appearance and behavior.
-        """
 
         self.setSelectionBehavior(
             QAbstractItemView.SelectRows,
@@ -104,48 +103,39 @@ class PartitionAllocationTable(
 
         header.setSectionResizeMode(
             3,
-            QHeaderView.Stretch,
+            QHeaderView.ResizeToContents,
         )
 
     # ---------------------------------------------------------
-    # Data
-    # ---------------------------------------------------------
-
-    def set_allocations(
-        self,
-        allocations,
-        owner_names,
-        parcel_numbers,
-    ) -> None:
-        """
-        Load allocations into the table.
-        """
-
-        self._model.set_allocations(
-            allocations,
-            owner_names,
-            parcel_numbers,
-        )
-
-    # ---------------------------------------------------------
-    # Public API
+    # Public
     # ---------------------------------------------------------
 
     @property
     def model(
         self,
-    ) -> PartitionAllocationModel:
-        """
-        Return the underlying table model.
-        """
+    ) -> PartitionOwnerModel:
 
         return self._model
-
-    def selected_allocation(
+    
+    def set_ownerships(
         self,
-    ) -> PartitionAllocation | None:
+        ownerships,
+        owner_names,
+    ) -> None:
         """
-        Return the selected allocation.
+        Load ownership records into the table.
+        """
+
+        self._model.set_ownerships(
+            ownerships,
+            owner_names,
+    )
+
+    def selected_ownership(
+        self,
+    ) -> Ownership | None:
+        """
+        Return the selected ownership.
         """
 
         indexes = (
@@ -154,21 +144,30 @@ class PartitionAllocationTable(
         )
 
         if not indexes:
-
             return None
 
-        return self._model.allocation_at(
+        return self._model.ownership_at(
             indexes[0].row(),
         )
 
-    def refresh(
+    def selected_owner_name(
         self,
-    ) -> None:
+    ) -> str:
         """
-        Refresh the table view.
+        Return the selected owner's display name.
         """
 
-        self.viewport().update()
+        indexes = (
+            self.selectionModel()
+            .selectedRows()
+        )
+
+        if not indexes:
+            return "---"
+
+        return self._model.owner_name_at(
+            indexes[0].row(),
+        )
 
     def clear_selection(
         self,
@@ -178,12 +177,3 @@ class PartitionAllocationTable(
         """
 
         self.clearSelection()
-
-    def clear(
-        self,
-    ) -> None:
-        """
-        Remove all allocations.
-        """
-
-        self._model.clear()

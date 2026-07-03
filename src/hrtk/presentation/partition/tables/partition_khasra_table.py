@@ -1,14 +1,10 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Partition Owner Table.
+Partition Khasra Table.
 """
 
 from __future__ import annotations
-
-from PySide6.QtCore import (
-    Qt,
-)
 
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -16,18 +12,18 @@ from PySide6.QtWidgets import (
     QTableView,
 )
 
-from hrtk.domain.ownership import Ownership
+from hrtk.domain.parcel import Parcel
 
-from hrtk.presentation.partition.partition_owner_model import (
-    PartitionOwnerModel,
+from hrtk.presentation.partition.models.partition_khasra_model import (
+    PartitionKhasraModel,
 )
 
 
-class PartitionOwnerTable(
+class PartitionKhasraTable(
     QTableView,
 ):
     """
-    Owner table used by the
+    Khasra table used by the
     Partition Workbench.
     """
 
@@ -38,7 +34,7 @@ class PartitionOwnerTable(
 
         super().__init__(parent)
 
-        self._model = PartitionOwnerModel(
+        self._model = PartitionKhasraModel(
             self,
         )
 
@@ -103,7 +99,7 @@ class PartitionOwnerTable(
 
         header.setSectionResizeMode(
             3,
-            QHeaderView.ResizeToContents,
+            QHeaderView.Stretch,
         )
 
     # ---------------------------------------------------------
@@ -113,29 +109,15 @@ class PartitionOwnerTable(
     @property
     def model(
         self,
-    ) -> PartitionOwnerModel:
+    ) -> PartitionKhasraModel:
 
         return self._model
-    
-    def set_ownerships(
-        self,
-        ownerships,
-        owner_names,
-    ) -> None:
-        """
-        Load ownership records into the table.
-        """
 
-        self._model.set_ownerships(
-            ownerships,
-            owner_names,
-    )
-
-    def selected_ownership(
+    def selected_khasra(
         self,
-    ) -> Ownership | None:
+    ) -> Parcel | None:
         """
-        Return the selected ownership.
+        Return the selected Khasra.
         """
 
         indexes = (
@@ -144,36 +126,30 @@ class PartitionOwnerTable(
         )
 
         if not indexes:
+
             return None
 
-        return self._model.ownership_at(
-            indexes[0].row(),
-        )
-
-    def selected_owner_name(
-        self,
-    ) -> str:
-        """
-        Return the selected owner's display name.
-        """
-
-        indexes = (
-            self.selectionModel()
-            .selectedRows()
-        )
-
-        if not indexes:
-            return "---"
-
-        return self._model.owner_name_at(
+        return self._model.khasra_at(
             indexes[0].row(),
         )
 
     def clear_selection(
         self,
     ) -> None:
-        """
-        Clear the current selection.
-        """
 
         self.clearSelection()
+
+    def clear(
+        self,
+    ) -> None:
+
+        self._model.clear()
+
+    def set_khasras(
+        self,
+        khasras,
+    ) -> None:
+
+        self._model.set_khasras(
+            khasras,
+        )
