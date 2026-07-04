@@ -46,6 +46,21 @@ class PartitionOwnerModel(
             str,
         ] = {}
 
+        #
+        # Allocation display values.
+        # Populated by PartitionWidget.
+        #
+
+        self._allocated: dict[
+            str,
+            str,
+        ] = {}
+
+        self._remaining: dict[
+            str,
+            str,
+        ] = {}
+
     # ---------------------------------------------------------
     # Qt Model
     # ---------------------------------------------------------
@@ -76,6 +91,7 @@ class PartitionOwnerModel(
     ):
 
         if role != Qt.DisplayRole:
+
             return None
 
         if orientation == Qt.Horizontal:
@@ -98,40 +114,55 @@ class PartitionOwnerModel(
             not index.isValid()
             or role != Qt.DisplayRole
         ):
+
             return None
 
-        ownership = self._ownerships[
-            index.row()
-        ]
+        ownership = (
+            self._ownerships[
+                index.row()
+            ]
+        )
 
         owner_name = (
             self._owner_names.get(
                 str(
-                    ownership.owner_id
+                    ownership.owner_id,
                 ),
                 "Unknown Owner",
             )
         )
 
-        column = index.column()
+        column = (
+            index.column()
+        )
 
         if column == 0:
+
             return owner_name
 
         if column == 1:
+
             return str(
-                ownership.share
+                ownership.share,
             )
 
-        #
-        # Future Allocation Engine
-        #
-
         if column == 2:
-            return "-"
+
+            return self._allocated.get(
+                str(
+                    ownership.owner_id,
+                ),
+                "-",
+            )
 
         if column == 3:
-            return "-"
+
+            return self._remaining.get(
+                str(
+                    ownership.owner_id,
+                ),
+                "-",
+            )
 
         return None
 
@@ -141,21 +172,55 @@ class PartitionOwnerModel(
 
     def set_ownerships(
         self,
-        ownerships: list[Ownership],
-        owner_names: dict[str, str],
+        ownerships: list[
+            Ownership,
+        ],
+        owner_names: dict[
+            str,
+            str,
+        ],
     ) -> None:
+        """
+        Load ownership records.
+        """
 
         self.beginResetModel()
 
-        self._ownerships = ownerships
+        self._ownerships = (
+            ownerships
+        )
 
-        self._owner_names = owner_names
+        self._owner_names = (
+            owner_names
+        )
 
         self.endResetModel()
 
-    # ---------------------------------------------------------
-    # Helpers
-    # ---------------------------------------------------------
+    def set_allocation_data(
+        self,
+        allocated: dict[
+            str,
+            str,
+        ],
+        remaining: dict[
+            str,
+            str,
+        ],
+    ) -> None:
+        """
+        Update allocated and remaining
+        values shown in the table.
+        """
+
+        self._allocated = (
+            allocated
+        )
+
+        self._remaining = (
+            remaining
+        )
+
+        self.layoutChanged.emit()
 
     # ---------------------------------------------------------
     # Helpers
@@ -164,9 +229,13 @@ class PartitionOwnerModel(
     @property
     def ownerships(
         self,
-    ) -> list[Ownership]:
+    ) -> list[
+        Ownership
+    ]:
 
-        return self._ownerships
+        return (
+            self._ownerships
+        )
 
     def ownership_at(
         self,
@@ -175,15 +244,16 @@ class PartitionOwnerModel(
 
         if (
             0 <= row
-            <
-            len(
+            < len(
                 self._ownerships
             )
         ):
 
-            return self._ownerships[
-                row
-            ]
+            return (
+                self._ownerships[
+                    row
+                ]
+            )
 
         return None
 
@@ -192,12 +262,13 @@ class PartitionOwnerModel(
         row: int,
     ) -> str:
         """
-        Return the display name of the owner
-        for the specified row.
+        Return the owner's display name.
         """
 
-        ownership = self.ownership_at(
-            row,
+        ownership = (
+            self.ownership_at(
+                row,
+            )
         )
 
         if ownership is None:
@@ -214,11 +285,18 @@ class PartitionOwnerModel(
     def clear(
         self,
     ) -> None:
+        """
+        Clear the model.
+        """
 
         self.beginResetModel()
 
         self._ownerships = []
 
         self._owner_names = {}
+
+        self._allocated = {}
+
+        self._remaining = {}
 
         self.endResetModel()

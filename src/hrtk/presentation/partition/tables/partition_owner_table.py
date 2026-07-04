@@ -6,10 +6,6 @@ Partition Owner Table.
 
 from __future__ import annotations
 
-from PySide6.QtCore import (
-    Qt,
-)
-
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
@@ -36,10 +32,14 @@ class PartitionOwnerTable(
         parent=None,
     ) -> None:
 
-        super().__init__(parent)
+        super().__init__(
+            parent,
+        )
 
-        self._model = PartitionOwnerModel(
-            self,
+        self._model = (
+            PartitionOwnerModel(
+                self,
+            )
         )
 
         self.setModel(
@@ -55,6 +55,9 @@ class PartitionOwnerTable(
     def _configure(
         self,
     ) -> None:
+        """
+        Configure the owner table.
+        """
 
         self.setSelectionBehavior(
             QAbstractItemView.SelectRows,
@@ -80,7 +83,9 @@ class PartitionOwnerTable(
             False,
         )
 
-        header = self.horizontalHeader()
+        header = (
+            self.horizontalHeader()
+        )
 
         header.setStretchLastSection(
             True,
@@ -107,29 +112,58 @@ class PartitionOwnerTable(
         )
 
     # ---------------------------------------------------------
-    # Public
+    # Public API
     # ---------------------------------------------------------
 
     @property
     def model(
         self,
     ) -> PartitionOwnerModel:
+        """
+        Return the table model.
+        """
 
         return self._model
-    
+
     def set_ownerships(
         self,
-        ownerships,
-        owner_names,
+        ownerships: list[
+            Ownership,
+        ],
+        owner_names: dict[
+            str,
+            str,
+        ],
     ) -> None:
         """
-        Load ownership records into the table.
+        Load ownership records.
         """
 
         self._model.set_ownerships(
             ownerships,
             owner_names,
-    )
+        )
+
+    def set_allocation_data(
+        self,
+        allocated: dict[
+            str,
+            str,
+        ],
+        remaining: dict[
+            str,
+            str,
+        ],
+    ) -> None:
+        """
+        Update allocation values
+        displayed in the table.
+        """
+
+        self._model.set_allocation_data(
+            allocated,
+            remaining,
+        )
 
     def selected_ownership(
         self,
@@ -144,6 +178,7 @@ class PartitionOwnerTable(
         )
 
         if not indexes:
+
             return None
 
         return self._model.ownership_at(
@@ -154,7 +189,8 @@ class PartitionOwnerTable(
         self,
     ) -> str:
         """
-        Return the selected owner's display name.
+        Return the selected owner's
+        display name.
         """
 
         indexes = (
@@ -163,6 +199,7 @@ class PartitionOwnerTable(
         )
 
         if not indexes:
+
             return "---"
 
         return self._model.owner_name_at(
