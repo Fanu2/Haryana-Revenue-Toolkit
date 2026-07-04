@@ -6,6 +6,8 @@ SQLite Database Utilities.
 
 from __future__ import annotations
 
+import hrtk.infrastructure.sqlite.models
+
 from hrtk.infrastructure.sqlite.base import Base
 from hrtk.infrastructure.sqlite.session import engine
 

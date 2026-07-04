@@ -43,6 +43,10 @@ from hrtk.infrastructure.sqlite.sqlite_ownership_repository import (
     SQLiteOwnershipRepository,
 )
 
+from hrtk.infrastructure.sqlite.sqlite_jamabandi_repository import (
+    SQLiteJamabandiRepository,
+)
+
 from hrtk.services.village_service import (
     VillageService,
 )
@@ -58,6 +62,10 @@ from hrtk.services.parcel_service import (
 
 from hrtk.services.ownership_service import (
     OwnershipService,
+)
+
+from hrtk.services.jamabandi_service import (
+    JamabandiService,
 )
 
 
@@ -126,6 +134,10 @@ class ApplicationContext:
             SQLiteOwnershipRepository()
         )
 
+        self._jamabandi_repository = (
+        SQLiteJamabandiRepository()
+        )
+
         #
         # Services
         #
@@ -148,6 +160,10 @@ class ApplicationContext:
 
         self._ownership_service = OwnershipService(
         self._ownership_repository,
+        )
+
+        self._jamabandi_service = JamabandiService(
+        self._jamabandi_repository,
         )
 
         self._logging.logger.info(
@@ -211,6 +227,12 @@ class ApplicationContext:
         self,
     ) -> SQLiteOwnershipRepository:
         return self._ownership_repository
+    
+    @property
+    def jamabandi_repository(
+        self,
+    ) -> SQLiteJamabandiRepository:
+        return self._jamabandi_repository
 
     # ---------------------------------------------------------
     # Services
@@ -245,6 +267,12 @@ class ApplicationContext:
         self,
     ) -> OwnershipService:
         return self._ownership_service
+    
+    @property
+    def jamabandi_service(
+        self,
+    ) -> JamabandiService:
+        return self._jamabandi_service
 
     # ---------------------------------------------------------
     # Shutdown
