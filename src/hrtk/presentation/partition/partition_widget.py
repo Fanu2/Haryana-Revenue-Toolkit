@@ -64,6 +64,10 @@ from hrtk.ui.panels.validation_panel import (
     ValidationPanel,
 )
 
+from hrtk.domain.value_objects.area import (
+    Area,
+)
+
 
 class PartitionWidget(
     QWidget,
@@ -97,6 +101,19 @@ class PartitionWidget(
         self._allocations: list[
             PartitionAllocation
         ] = []
+
+        #
+        # Cached Data
+        #
+
+        self._ownerships = []
+
+        self._khasras = []
+
+        self._owner_names: dict[
+            str,
+            str,
+        ] = {}
 
         #
         # Build User Interface
@@ -543,7 +560,7 @@ class PartitionWidget(
         if khewat_id is None:
 
             self._status.setText(
-                "No Khewat selected."
+                "No Khewat selected.",
             )
 
             return
@@ -552,7 +569,7 @@ class PartitionWidget(
         # Ownership
         #
 
-        ownerships = (
+        self._ownerships = (
             self._context
             .ownership_service
             .by_khewat(
@@ -564,7 +581,7 @@ class PartitionWidget(
         # Parcels
         #
 
-        khasras = (
+        self._khasras = (
             self._context
             .parcel_service
             .list()
@@ -574,10 +591,7 @@ class PartitionWidget(
         # Owner Lookup
         #
 
-        owner_names: dict[
-            str,
-            str,
-        ] = {}
+        self._owner_names.clear()
 
         for owner in (
             self._context
@@ -585,7 +599,7 @@ class PartitionWidget(
             .all()
         ):
 
-            owner_names[
+            self._owner_names[
                 str(owner.id)
             ] = owner.display_name
 
@@ -594,12 +608,12 @@ class PartitionWidget(
         #
 
         self._owner_table.set_ownerships(
-            ownerships,
-            owner_names,
+            self._ownerships,
+            self._owner_names,
         )
 
         self._khasra_table.set_khasras(
-            khasras,
+            self._khasras,
         )
 
         #
@@ -609,26 +623,32 @@ class PartitionWidget(
         self._owner_summary.set_values(
             {
                 "Owners": str(
-                    len(ownerships),
+                    len(
+                        self._ownerships,
+                    ),
                 ),
-                },
-            )
+            },
+        )
 
         self._parcel_summary.set_values(
             {
                 "Parcels": str(
-                    len(khasras),
+                    len(
+                        self._khasras,
                     ),
-                },
-            )
+                ),
+            },
+        )
 
         self._case_summary.set_values(
             {
                 "Allocations": str(
-                    len(self._allocations),
+                    len(
+                        self._allocations,
                     ),
-                },
-            )
+                ),
+            },
+        )
 
         #
         # Validation
@@ -644,10 +664,27 @@ class PartitionWidget(
             "Parcels",
         )
 
-        self._validation.set_warning(
-            "Allocation",
-            "Pending",
-        )
+        if self._allocations:
+
+            self._validation.set_valid(
+                "Allocation",
+                "Created",
+            )
+
+        else:
+
+            self._validation.set_warning(
+                "Allocation",
+                "Pending",
+            )
+
+        #
+        # Allocation Panels
+        #
+
+        self._allocation_summary.clear()
+
+        self._allocation_validation.show_default_state()
 
         #
         # Status
@@ -655,10 +692,9 @@ class PartitionWidget(
 
         self._status.setText(
             f"Loaded "
-            f"{len(ownerships)} Owners, "
-            f"{len(khasras)} Khasras."
-        )   
-
+            f"{len(self._ownerships)} Owners, "
+            f"{len(self._khasras)} Khasras.",
+        )
     def _owner_selected(
         self,
     ) -> None:
@@ -716,10 +752,54 @@ class PartitionWidget(
             )
 
             self._status.setText(
-                "No Khasra selected."
+                "No Khasra selected.",
             )
 
             return
+
+        #
+        # Calculate total allocated area
+        #
+
+        allocated = Area.zero()
+
+        for allocation in (
+            self._allocations
+        ):
+
+            if (
+                allocation.parcel_number
+                == parcel.number
+            ):
+
+                allocated = (
+                    allocated
+                    + allocation.allocated_area
+                )
+
+        #
+        # Calculate remaining area
+        #
+
+        try:
+
+            remaining = (
+                parcel.area
+                - allocated
+            )
+
+        except ValueError:
+
+            #
+            # Safety:
+            # Prevent negative display.
+            #
+
+            remaining = Area.zero()
+
+        #
+        # Update Allocation Panel
+        #
 
         self._allocation_panel.set_khasra(
             str(
@@ -728,7 +808,7 @@ class PartitionWidget(
         )
 
         self._allocation_panel.set_remaining_area(
-            parcel.area.display(),
+            remaining.display(),
         )
 
         self._status.setText(
@@ -737,7 +817,7 @@ class PartitionWidget(
                 f"{parcel.number}"
             ),
         )
-
+        
     # ---------------------------------------------------------
     # Allocation
     # ---------------------------------------------------------
@@ -757,7 +837,7 @@ class PartitionWidget(
         if ownership is None:
 
             self._status.setText(
-                "Select an owner."
+                "Select an owner.",
             )
 
             return
@@ -769,17 +849,76 @@ class PartitionWidget(
         if parcel is None:
 
             self._status.setText(
-                "Select a Khasra."
+                "Select a Khasra.",
             )
 
             return
+
+        #
+        # Determine allocation area
+        #
+
+        if (
+            self._allocation_panel
+            .allocation_mode()
+            == "entire"
+        ):
+
+            allocated_area = (
+                parcel.area
+            )
+
+        else:
+
+            kanal, marla, sarsai = (
+                self._allocation_panel
+                .allocated_area()
+            )
+
+            allocated_area = (
+                Area.from_kms(
+                    kanal=kanal,
+                    marla=marla,
+                    sarsai=sarsai,
+                )
+            )
+
+        #
+        # Validation
+        #
+
+        if (
+            allocated_area
+            == Area.zero()
+        ):
+
+            self._status.setText(
+                "Enter an allocation area.",
+            )
+
+            return
+
+        if (
+            allocated_area.total_sarsai
+            > parcel.area.total_sarsai
+        ):
+
+            self._status.setText(
+                "Allocated area exceeds parcel area.",
+            )
+
+            return
+
+        #
+        # Create Allocation
+        #
 
         allocation = PartitionAllocation(
             id=uuid4(),
             partition_case_id=uuid4(),
             owner_id=ownership.owner_id,
             parcel_number=parcel.number,
-            allocated_area=parcel.area,
+            allocated_area=allocated_area,
             remarks="",
         )
 
@@ -787,19 +926,23 @@ class PartitionWidget(
             allocation,
         )
 
-        self._refresh_allocation_register()
+        #
+        # Refresh UI
+        #
+
+        self._refresh_partition_ui()
+
+        #
+        # Refresh remaining area for
+        # selected parcel.
+        #
+
+        self._khasra_selected()
 
         self._status.setText(
-            "Allocation created."
+            "Allocation created.",
         )
 
-        self._case_summary.set_values(
-            {
-            "Allocations": str(
-                len(self._allocations),
-                ) ,
-            }
-        )
 
     def _refresh_allocation_register(
         self,
@@ -847,3 +990,87 @@ class PartitionWidget(
         )
 
         self._allocation_table.refresh()
+    
+    
+    def _refresh_partition_ui(
+        self,
+    ) -> None:
+        """
+        Refresh all Partition UI components.
+        """
+
+        #
+        # Allocation Register
+        #
+
+        self._refresh_allocation_register()
+
+        #
+        # Summary Panels
+        #
+
+        self._owner_summary.set_values(
+            {
+                "Owners": str(
+                    len(
+                        self._ownerships,
+                    ),
+                ),
+            },
+        )
+
+        self._parcel_summary.set_values(
+            {
+                "Parcels": str(
+                    len(
+                        self._khasras,
+                    ),
+                ),
+            },
+        )
+
+        self._case_summary.set_values(
+            {
+                "Allocations": str(
+                    len(
+                        self._allocations,
+                    ),
+                ),
+            },
+        )
+
+        #
+        # Validation
+        #
+
+        self._validation.clear()
+
+        self._validation.set_valid(
+            "Ownership",
+        )
+
+        self._validation.set_valid(
+            "Parcels",
+        )
+
+        if self._allocations:
+
+            self._validation.set_valid(
+                "Allocation",
+                "Created",
+            )
+
+        else:
+
+            self._validation.set_warning(
+                "Allocation",
+                "Pending",
+            )
+
+        #
+        # Allocation Panels
+        #
+
+        self._allocation_summary.clear()
+
+        self._allocation_validation.show_default_state()

@@ -18,41 +18,29 @@ from PySide6.QtWidgets import (
 )
 
 
-class SummaryPanel(
-    QFrame,
-):
+class SummaryPanel(QFrame):
     """
-    Generic summary panel used
-    throughout HRTK.
+    Generic summary panel used throughout HRTK.
 
-    The panel displays a title and
-    dynamically created rows.
+    Displays a title and a dynamic list of
+    label/value pairs.
 
-    No business logic belongs here.
+    This widget contains no business logic.
     """
 
     def __init__(
         self,
-        title: str,
+        title: str = "Summary",
         parent: QWidget | None = None,
     ) -> None:
 
-        super().__init__(
-            parent,
-        )
+        super().__init__(parent)
 
-        self._title = QLabel(
-            title,
-        )
+        self._title = QLabel(title)
 
-        self._rows: dict[
-            str,
-            QLabel,
-        ] = {}
+        self._rows: dict[str, QLabel] = {}
 
-        self._layout = QVBoxLayout(
-            self,
-        )
+        self._layout = QVBoxLayout(self)
 
         self._form = QFormLayout()
 
@@ -76,9 +64,6 @@ class SummaryPanel(
         self,
         title: str,
     ) -> None:
-        """
-        Set the panel title.
-        """
 
         self._title.setText(
             title,
@@ -87,9 +72,6 @@ class SummaryPanel(
     def title(
         self,
     ) -> str:
-        """
-        Return the current title.
-        """
 
         return self._title.text()
 
@@ -99,7 +81,7 @@ class SummaryPanel(
         value: str,
     ) -> None:
         """
-        Create or update a summary row.
+        Create or update one summary value.
         """
 
         if label not in self._rows:
@@ -111,9 +93,7 @@ class SummaryPanel(
                 | Qt.AlignVCenter,
             )
 
-            self._rows[label] = (
-                value_label
-            )
+            self._rows[label] = value_label
 
             self._form.addRow(
                 QLabel(label),
@@ -124,29 +104,45 @@ class SummaryPanel(
             value,
         )
 
+    def set_values(
+        self,
+        values: dict[str, str],
+    ) -> None:
+        """
+        Update multiple values.
+        """
+
+        for label, value in values.items():
+
+            self.set_value(
+                label,
+                value,
+            )
+
     def value(
         self,
         label: str,
     ) -> str:
-        """
-        Return the displayed value
-        for a row.
-        """
 
         if label not in self._rows:
 
             return ""
 
-        return self._rows[
-            label
-        ].text()
+        return self._rows[label].text()
+
+    def values(
+        self,
+    ) -> dict[str, str]:
+
+        return {
+            label: widget.text()
+            for label, widget
+            in self._rows.items()
+        }
 
     def labels(
         self,
     ) -> list[str]:
-        """
-        Return all row labels.
-        """
 
         return list(
             self._rows.keys(),
@@ -156,14 +152,18 @@ class SummaryPanel(
         self,
     ) -> None:
         """
-        Clear displayed values.
+        Clear displayed values only.
+
+        Existing rows are intentionally
+        retained to avoid Qt ownership
+        issues.
         """
 
-        for value_label in (
+        for widget in (
             self._rows.values()
         ):
 
-            value_label.clear()
+            widget.clear()
 
     # ---------------------------------------------------------
     # Configuration
@@ -172,9 +172,6 @@ class SummaryPanel(
     def _configure(
         self,
     ) -> None:
-        """
-        Configure the panel appearance.
-        """
 
         self.setFrameShape(
             QFrame.StyledPanel,
@@ -232,97 +229,3 @@ class SummaryPanel(
         self._title.setFont(
             font,
         )
-
-    # ---------------------------------------------------------
-    # Private Helpers
-    # ---------------------------------------------------------
-
-    def _has_row(
-        self,
-        label: str,
-    ) -> bool:
-        """
-        Return True if the row exists.
-        """
-
-        return (
-            label in self._rows
-        )
-    
-    def set_values(
-        self,
-        values: dict[str, str],
-    ) -> None:
-        """
-        Update all displayed values.
-        """
-
-        for label, value in values.items():
-
-            self.set_value(
-                label,
-                value,
-            )
-
-    def remove_row(
-        self,
-        label: str,
-    ) -> None:
-        """
-        Remove a row from the panel.
-        """
-
-        if label not in self._rows:
-
-            return
-
-        value_label = self._rows.pop(
-            label,
-        )
-
-        for row in range(
-            self._form.rowCount(),
-        ):
-
-            item = self._form.itemAt(
-                row,
-                QFormLayout.LabelRole,
-            )
-
-            if item is None:
-
-                continue
-
-            widget = item.widget()
-
-            if (
-                isinstance(
-                    widget,
-                    QLabel,
-                )
-                and widget.text() == label
-            ):
-
-                label_widget = widget
-
-                self._form.removeRow(
-                    row,
-                )
-
-                label_widget.deleteLater()
-
-                value_label.deleteLater()
-
-                break
-
-    def values(
-        self,
-    ) -> dict[str, str]:
-        """
-        Return all displayed values.
-        """
-
-        return {
-            label: widget.text()
-            for label, widget in self._rows.items()
-        }
