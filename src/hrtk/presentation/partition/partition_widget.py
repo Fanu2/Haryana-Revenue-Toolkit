@@ -56,11 +56,11 @@ from hrtk.presentation.partition.partition_toolbar import (
     PartitionToolbar,
 )
 
-from hrtk.presentation.partition.panels.summary_panel import (
+from hrtk.ui.panels.summary_panel import (
     SummaryPanel,
 )
 
-from hrtk.presentation.partition.panels.validation_panel import (
+from hrtk.ui.panels.validation_panel import (
     ValidationPanel,
 )
 
@@ -160,17 +160,34 @@ class PartitionWidget(
             PartitionAllocationTable()
         )
 
-        #
-        # Summary
-        #
+       
+        # ---------------------------------------------------------
+        # Summary Panels
+        # ---------------------------------------------------------
 
-        self._summary = (
-            SummaryPanel()
+        self._owner_summary = SummaryPanel(
+            "Owner Summary",
         )
 
-        self._validation = (
-            ValidationPanel()
+        self._parcel_summary = SummaryPanel(
+            "Parcel Summary",
         )
+
+        self._case_summary = SummaryPanel(
+            "Case Summary",
+        )
+
+        # ---------------------------------------------------------
+        # Validation
+        # ---------------------------------------------------------
+
+        self._validation = ValidationPanel(
+            "Validation",
+        )
+
+    # ---------------------------------------------------------
+    # Allocation Panels
+    # ---------------------------------------------------------
 
         self._allocation_summary = (
             AllocationSummary()
@@ -311,7 +328,15 @@ class PartitionWidget(
         bottom_layout = QHBoxLayout()
 
         bottom_layout.addWidget(
-            self._summary,
+            self._owner_summary,
+        )
+
+        bottom_layout.addWidget(
+            self._parcel_summary,
+        )
+
+        bottom_layout.addWidget(
+            self._case_summary,
         )
 
         bottom_layout.addWidget(
@@ -538,9 +563,6 @@ class PartitionWidget(
         #
         # Parcels
         #
-        # Stable Parcel module currently
-        # returns all parcels.
-        #
 
         khasras = (
             self._context
@@ -568,7 +590,7 @@ class PartitionWidget(
             ] = owner.display_name
 
         #
-        # Owner Table
+        # Populate Tables
         #
 
         self._owner_table.set_ownerships(
@@ -576,28 +598,56 @@ class PartitionWidget(
             owner_names,
         )
 
-        #
-        # Khasra Table
-        #
-
         self._khasra_table.set_khasras(
             khasras,
         )
 
         #
-        # Summary
+        # Summary Panels
         #
 
-        self._summary.update_summary(
-            ownerships,
-            khasras,
-        )
+        self._owner_summary.set_values(
+            {
+                "Owners": str(
+                    len(ownerships),
+                ),
+                },
+            )
+
+        self._parcel_summary.set_values(
+            {
+                "Parcels": str(
+                    len(khasras),
+                    ),
+                },
+            )
+
+        self._case_summary.set_values(
+            {
+                "Allocations": str(
+                    len(self._allocations),
+                    ),
+                },
+            )
 
         #
         # Validation
         #
 
         self._validation.clear()
+
+        self._validation.set_valid(
+            "Ownership",
+        )
+
+        self._validation.set_valid(
+            "Parcels",
+        )
+
+        self._validation.set_warning(
+            "Allocation",
+            "Pending",
+        )
 
         #
         # Status
@@ -607,11 +657,7 @@ class PartitionWidget(
             f"Loaded "
             f"{len(ownerships)} Owners, "
             f"{len(khasras)} Khasras."
-        )
-
-    # ---------------------------------------------------------
-    # Selection
-    # ---------------------------------------------------------
+        )   
 
     def _owner_selected(
         self,
@@ -745,6 +791,14 @@ class PartitionWidget(
 
         self._status.setText(
             "Allocation created."
+        )
+
+        self._case_summary.set_values(
+            {
+            "Allocations": str(
+                len(self._allocations),
+                ) ,
+            }
         )
 
     def _refresh_allocation_register(

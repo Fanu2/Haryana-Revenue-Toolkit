@@ -146,154 +146,121 @@ class AllocationService:
             )
         )
     
-"""
-Haryana Revenue Toolkit (HRTK)
-
-Allocation Service.
-"""
-
-from __future__ import annotations
-
-from uuid import UUID
-
-from hrtk.domain.owner import Owner
-
-from hrtk.domain.parcel import Parcel
-
-from hrtk.domain.partition_case import (
-    PartitionCase,
-)
-
-from hrtk.domain.partition_allocation import (
-    PartitionAllocation,
-)
-
-from hrtk.domain.value_objects.area import (
-    Area,
-)
-
-from hrtk.repositories.partition_case_repository import (
-    PartitionCaseRepository,
-)
-
-from hrtk.repositories.partition_allocation_repository import (
-    PartitionAllocationRepository,
-)
-
-
-class AllocationService:
-    """
-    Coordinates all Partition Allocation
-    business operations.
-
-    The service manages Partition Cases,
-    Allocation workflow and repository
-    persistence.
-
-    Business rules remain inside the
-    domain model whenever appropriate.
-    """
-
-    def __init__(
-        self,
-        case_repository: PartitionCaseRepository,
-        allocation_repository: (
-            PartitionAllocationRepository
-        ),
-    ) -> None:
-
-        self._case_repository = (
-            case_repository
-        )
-
-        self._allocation_repository = (
-            allocation_repository
-        )
-
     # ---------------------------------------------------------
-    # Case Management
+    # Allocation Operations
     # ---------------------------------------------------------
 
-    def create_case(
+    def allocate(
         self,
-        case: PartitionCase,
-    ) -> None:
+        case_id: UUID,
+        owner: Owner,
+        parcel: Parcel,
+        area: Area,
+        remarks: str = "",
+    ) -> PartitionAllocation:
         """
-        Create a new Partition Case.
+        Allocate an area of a parcel
+        to an owner.
         """
 
-        if self.exists(
-            case.id,
+        case = self._validate_case(
+            case_id,
+        )
+
+        allocation = self._create_allocation(
+            case=case,
+            owner=owner,
+            parcel=parcel,
+            area=area,
+            remarks=remarks,
+        )
+
+        self._store_allocation(
+            case,
+            allocation,
+        )
+
+        return allocation
+
+    def remove(
+        self,
+        case_id: UUID,
+        allocation_id: UUID,
+    ) -> None:
+        """
+        Remove an allocation.
+        """
+
+        case = self._validate_case(
+            case_id,
+        )
+
+        self._remove_allocation(
+            case,
+            allocation_id,
+        )
+
+        self.save_case(
+            case,
+        )
+
+    def update(
+        self,
+        case_id: UUID,
+        allocation: PartitionAllocation,
+    ) -> None:
+        """
+        Update an allocation.
+        """
+
+        case = self._validate_case(
+            case_id,
+        )
+
+        if (
+            not case.has_allocation(
+                allocation.id,
+            )
         ):
             raise ValueError(
-                "Partition case already exists."
+                "Allocation not found."
             )
 
-        self._case_repository.add(
+        self._allocation_repository.update(
+            allocation,
+        )
+
+        self.save_case(
             case,
         )
 
-    def get_case(
-        self,
-        case_id: UUID,
-    ) -> PartitionCase | None:
-        """
-        Return a Partition Case.
-        """
-
-        return self._case_repository.get(
-            case_id,
-        )
-
-    def save_case(
-        self,
-        case: PartitionCase,
-    ) -> None:
-        """
-        Persist changes to a
-        Partition Case.
-        """
-
-        self._case_repository.update(
-            case,
-        )
-
-    def delete_case(
+    def clear(
         self,
         case_id: UUID,
     ) -> None:
         """
-        Delete a Partition Case.
+        Remove every allocation
+        from the partition case.
         """
 
-        self._case_repository.remove(
+        case = self._validate_case(
             case_id,
         )
 
-    def list_cases(
-        self,
-    ) -> list[PartitionCase]:
-        """
-        Return all Partition Cases.
-        """
+        for allocation in list(
+            case.allocations,
+        ):
 
-        return self._case_repository.list()
-
-    def exists(
-        self,
-        case_id: UUID,
-    ) -> bool:
-        """
-        Return True if the
-        Partition Case exists.
-        """
-
-        return (
-            self._case_repository.exists(
-                case_id,
+            self._allocation_repository.remove(
+                allocation.id,
             )
+
+        case.clear_allocations()
+
+        self.save_case(
+            case,
         )
-    
+
     # ---------------------------------------------------------
     # Query Operations
     # ---------------------------------------------------------
