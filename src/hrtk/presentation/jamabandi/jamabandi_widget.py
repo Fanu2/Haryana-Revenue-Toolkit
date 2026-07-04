@@ -133,6 +133,10 @@ class JamabandiWidget(QWidget):
             self._selection_changed,
         )
 
+        self._context.selection.village_changed.connect(
+            self._village_changed,
+        )
+
     # ---------------------------------------------------------
     # Loading
     # ---------------------------------------------------------
@@ -304,3 +308,25 @@ class JamabandiWidget(QWidget):
         self._toolbar.enable_selection_actions(
             selected,
         )
+
+    def _village_changed(
+        self,
+        village,
+    ) -> None:
+        """
+        Track the currently selected village.
+        """
+
+        self._selected_village = village
+
+        if village is None:
+
+            self._status.setText(
+                "No village selected.",
+            )
+
+        else:
+
+            self._status.setText(
+                f"Village: {village.name}",
+            )

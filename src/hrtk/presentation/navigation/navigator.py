@@ -39,11 +39,8 @@ class Navigator(QTreeWidget):
         revenue.addChild(QTreeWidgetItem(["Khewats"]))
         revenue.addChild(QTreeWidgetItem(["Khasras"]))
         revenue.addChild(QTreeWidgetItem(["Ownership"]))
-        revenue.addChild(
-            QTreeWidgetItem(
-                ["Partition"]
-            )
-        )
+        revenue.addChild(QTreeWidgetItem(["Jamabandi"]))
+        revenue.addChild(QTreeWidgetItem(["Partition"]))
 
         gis = QTreeWidgetItem(["GIS"])
         gis.addChild(QTreeWidgetItem(["Canvas"]))

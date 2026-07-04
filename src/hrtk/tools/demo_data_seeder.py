@@ -1,57 +1,27 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Demo Data Seeder.
+Application wrapper for the Developer Demo Database Seeder.
 """
 
 from __future__ import annotations
 
-from hrtk.application.application_context import (
-    ApplicationContext,
+from tools.demo_data_seeder import (
+    DemoDataSeeder as _DemoDataSeeder,
 )
 
 
-class DemoDataSeeder:
+class DemoDataSeeder(_DemoDataSeeder):
+    """
+    Application wrapper.
 
-    def __init__(self) -> None:
+    The real implementation lives in the project's
+    developer tools package.
+    """
 
-        self.context = ApplicationContext()
+    pass
 
-    def run(self) -> None:
 
-        print("=" * 60)
-        print("HRTK DEMO DATA SEEDER")
-        print("=" * 60)
-
-        self.seed_villages()
-
-        self.seed_owners()
-
-        self.seed_khewats()
-
-        self.seed_parcels()
-
-        self.seed_ownerships()
-
-        print()
-        print("Demo database completed.")
-
-    def seed_villages(self):
-
-        print("Seeding villages...")
-
-    def seed_owners(self):
-
-        print("Seeding owners...")
-
-    def seed_khewats(self):
-
-        print("Seeding khewats...")
-
-    def seed_parcels(self):
-
-        print("Seeding parcels...")
-
-    def seed_ownerships(self):
-
-        print("Seeding ownerships...")
+__all__ = [
+    "DemoDataSeeder",
+]
