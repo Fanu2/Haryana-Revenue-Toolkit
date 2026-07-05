@@ -87,24 +87,10 @@ class PartitionKhasraModel(QAbstractTableModel):
         column = index.column()
 
         if column == 0:
-
-            if hasattr(khasra, "display_name"):
-                return khasra.display_name
-
-            if hasattr(khasra, "parcel_no"):
-                return khasra.parcel_no
-
-            if hasattr(khasra, "number"):
-                return khasra.number
-
-            return str(khasra.id)
+            return str(khasra.number)
 
         if column == 1:
-
-            if hasattr(khasra, "area"):
-                return str(khasra.area)
-
-            return "-"
+         return str(khasra.area)
 
         if column == 2:
             return "Available"
@@ -113,7 +99,6 @@ class PartitionKhasraModel(QAbstractTableModel):
             return "-"
 
         return None
-
     # ---------------------------------------------------------
     # Loading
     # ---------------------------------------------------------
