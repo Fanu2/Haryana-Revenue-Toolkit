@@ -75,10 +75,21 @@ class PartitionAllocationMapper:
                 model.owner_id,
             ),
             parcel_number=ParcelNumber(
-                model.parcel_number,
+                rectangle=int(
+                    model.parcel_number.split("//")[0]
+                ),
+                killa=model.parcel_number.split("//")[1],
             ),
-            allocated_area=Area.parse(
-                model.allocated_area,
+            allocated_area=Area.from_kms(
+                kanal=int(
+                    model.allocated_area.split("K-")[0]
+                ),
+                marla=int(
+                    model.allocated_area.split("K-")[1].split("M-")[0]
+                ),
+                sarsai=int(
+                    model.allocated_area.split("M-")[1].split("S")[0]
+                ),
             ),
             remarks=model.remarks,
         )

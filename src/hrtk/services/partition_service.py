@@ -107,6 +107,25 @@ class PartitionService(
 
         self.repository.update(case)
 
+    def find_by_record(
+        self,
+        village_id,
+        khewat_id,
+        jamabandi_year,
+    ) -> PartitionCase | None:
+        """
+        Find a partition case by
+        village, khewat and year.
+        """
+
+        return (
+            self.repository.find_by_record(
+                village_id,
+                khewat_id,
+                jamabandi_year,
+            )
+        )
+
     def find(
         self,
         case_id: UUID,

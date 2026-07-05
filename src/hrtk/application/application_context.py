@@ -88,15 +88,6 @@ from hrtk.services.khewat_parcel_service import (
     KhewatParcelService,
 )
 
-from hrtk.infrastructure.sqlite.sqlite_khewat_parcel_repository import (
-    SQLiteKhewatParcelRepository,
-)
-
-from hrtk.services.khewat_parcel_service import (
-    KhewatParcelService,
-)
-
-
 
 
 class ApplicationContext:

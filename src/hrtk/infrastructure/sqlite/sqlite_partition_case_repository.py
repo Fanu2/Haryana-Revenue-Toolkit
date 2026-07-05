@@ -166,6 +166,37 @@ class SQLitePartitionCaseRepository(
 
         return self.list()
 
+
+    def find_by_record(
+        self,
+        village_id,
+        khewat_id,
+        jamabandi_year,
+    ) -> PartitionCase | None:
+
+        with SessionFactory() as session:
+
+            model = (
+                session.query(
+                    PartitionCaseModel
+                )
+                .filter_by(
+                    village_id=str(village_id),
+                    khewat_id=str(khewat_id),
+                    jamabandi_year=jamabandi_year,
+                )
+                .first()
+            )
+
+            if model is None:
+                return None
+
+            return (
+                PartitionCaseMapper.to_domain(
+                    model,
+                )
+            )
+
     def exists(
         self,
         case_id: UUID,

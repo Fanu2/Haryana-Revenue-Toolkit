@@ -445,13 +445,40 @@ class PartitionWidget(
         )
 
         #
-        # Allocation
+        # Allocation Panel
         #
 
         self._allocation_panel.allocate_requested.connect(
             self._allocate,
         )
 
+        #
+        # Toolbar
+        #
+
+        self._toolbar.allocate_requested.connect(
+            self._allocate,
+        )
+
+        self._toolbar.save_requested.connect(
+            self._save_partition,
+        )
+
+        self._toolbar.validate_requested.connect(
+            self._validate_partition,
+        )
+
+        self._toolbar.undo_requested.connect(
+            self._undo_last_allocation,
+        )
+
+        self._toolbar.refresh_requested.connect(
+            self._refresh_partition,
+        )
+
+        self._toolbar.report_requested.connect(
+            self._report_partition,
+        )
     # ---------------------------------------------------------
     # Loading
     # ---------------------------------------------------------
@@ -637,6 +664,52 @@ class PartitionWidget(
                 khewat_id,
             )
         )
+
+                #
+        # Existing Partition Case
+        #
+
+        self._partition_case = None
+
+        jamabandi_id = (
+            self._jamabandi_combo.currentData()
+        )
+
+        if jamabandi_id is not None:
+
+            jamabandi = (
+                self._context
+                .jamabandi_service
+                .by_id(
+                    jamabandi_id,
+                )
+            )
+
+            if jamabandi is not None:
+
+                self._partition_case = (
+                    self._context
+                    .partition_service
+                    .find_by_record(
+                        self._village_combo.currentData(),
+                        khewat_id,
+                        jamabandi.year,
+                    )
+                )
+
+        if self._partition_case is not None:
+
+            self._allocations = (
+                self._context
+                .partition_allocation_repository
+                .find_by_partition_case(
+                    self._partition_case.id,
+                )
+            )
+
+        else:
+
+            self._allocations = []
 
         #
         # Parcels
@@ -1082,18 +1155,462 @@ class PartitionWidget(
         # Refresh UI
         #
 
+    def _refresh_partition_ui(
+        self,
+    ) -> None:
+        """
+        Refresh every visual component of the
+        Partition Workbench.
+        """
+
+        #
+        # Allocation Register
+        #
+
+        self._refresh_allocation_register()
+
+        #
+        # Summary Panels
+        #
+
+        self._owner_summary.set_values(
+            {
+                "Owners": str(
+                    len(
+                        self._ownerships,
+                    ),
+                ),
+            },
+        )
+
+        self._parcel_summary.set_values(
+            {
+                "Parcels": str(
+                    len(
+                        self._khasras,
+                    ),
+                ),
+            },
+        )
+
+        self._case_summary.set_values(
+            {
+                "Allocations": str(
+                    len(
+                        self._allocations,
+                    ),
+                ),
+            },
+        )
+
+        #
+        # Total Allocated Area
+        #
+
+        total_allocated = Area.zero()
+
+        for allocation in self._allocations:
+
+            total_allocated = (
+                total_allocated
+                + allocation.allocated_area
+            )
+
+        self._allocation_summary.set_values(
+            {
+                "Allocations": str(
+                    len(
+                        self._allocations,
+                    ),
+                ),
+                "Allocated Area": (
+                    total_allocated.display()
+                ),
+            },
+        )
+
+        #
+        # Validation
+        #
+
+        self._validation.clear()
+
+        self._validation.set_valid(
+            "Ownership",
+        )
+
+        self._validation.set_valid(
+            "Parcels",
+        )
+
+        if self._allocations:
+
+            self._validation.set_valid(
+                "Allocation",
+                "Created",
+            )
+
+            self._allocation_validation.show_partition_ready()
+
+        else:
+
+            self._validation.set_warning(
+                "Allocation",
+                "Pending",
+            )
+
+            self._allocation_validation.show_default_state()
+
+        #
+        # Toolbar
+        #
+
+        self._update_toolbar_state()
+
+    # ---------------------------------------------------------
+    # Toolbar Actions
+    # ---------------------------------------------------------
+
+    def _save_partition(
+        self,
+    ) -> None:
+        """
+        Save the current Partition Case.
+        """
+
+        if self._partition_case is None:
+
+            self._status.setText(
+                "No partition case available.",
+            )
+
+            return
+
+        try:
+
+            self._context.partition_service.update(
+                self._partition_case,
+            )
+
+        except AttributeError:
+
+            #
+            # Older service implementation.
+            #
+
+            pass
+
+        self._status.setText(
+            "Partition saved.",
+        )
+
+
+    def _validate_partition(
+        self,
+    ) -> None:
+        """
+        Validate current partition.
+        """
+
+        if self._partition_case is None:
+
+            self._status.setText(
+                "No partition case.",
+            )
+
+            return
+
+        if not self._allocations:
+
+            self._status.setText(
+                "No allocations available.",
+            )
+
+            return
+
+        self._validation.clear()
+
+        self._validation.set_valid(
+            "Ownership",
+        )
+
+        self._validation.set_valid(
+            "Parcels",
+        )
+
+        self._validation.set_valid(
+            "Allocation",
+            "Validated",
+        )
+
+        self._allocation_validation.show_partition_ready()
+
+        try:
+
+            self._context.partition_service.validate(
+                self._partition_case.id,
+            )
+
+        except AttributeError:
+
+            #
+            # Validation not implemented
+            # in older service.
+            #
+
+            pass
+
+        self._status.setText(
+            "Partition validated.",
+        )
+
+
+    def _undo_last_allocation(
+        self,
+    ) -> None:
+        """
+        Undo last allocation.
+        """
+
+        if not self._allocations:
+
+            self._status.setText(
+                "Nothing to undo.",
+            )
+
+            return
+
+        allocation = (
+            self._allocations.pop()
+        )
+
+        try:
+
+            self._context.partition_allocation_repository.remove(
+                allocation.id,
+            )
+
+        except Exception:
+
+            pass
+
         self._refresh_partition_ui()
-        #
-        # Refresh remaining area for
-        # selected parcel.
-        #
 
         self._khasra_selected()
 
         self._status.setText(
-            "Allocation created.",
+            "Last allocation removed.",
+        )
+        #
+        # Status
+        #
+
+        self._status.setText(
+            (
+                f"{len(self._allocations)} "
+                "allocation(s) available."
+            ),
         )
 
+
+    # ---------------------------------------------------------
+    # Refresh / Report
+    # ---------------------------------------------------------
+
+    def _refresh_partition(
+        self,
+    ) -> None:
+        """
+        Reload the current Partition workspace.
+        """
+
+        self._load_partition_data()
+
+        self._refresh_partition_ui()
+
+        self._khasra_selected()
+
+        self._owner_selected()
+
+        self._status.setText(
+            "Partition refreshed.",
+        )
+
+
+    def _report_partition(
+        self,
+    ) -> None:
+        """
+        Display a summary of the current
+        partition.
+        """
+
+        total_area = Area.zero()
+
+        for allocation in self._allocations:
+
+            total_area = (
+                total_area
+                + allocation.allocated_area
+            )
+
+        self._status.setText(
+            (
+                f"Owners: {len(self._ownerships)} | "
+                f"Parcels: {len(self._khasras)} | "
+                f"Allocations: {len(self._allocations)} | "
+                f"Area: {total_area.display()}"
+            ),
+        )
+
+
+    # ---------------------------------------------------------
+    # Helper Methods
+    # ---------------------------------------------------------
+
+    def current_partition_case(
+        self,
+    ):
+        """
+        Return active partition case.
+        """
+
+        return self._partition_case
+
+
+    def allocations(
+        self,
+    ) -> list[PartitionAllocation]:
+        """
+        Return allocation list.
+        """
+
+        return list(
+            self._allocations,
+        )
+
+
+    def allocation_count(
+        self,
+    ) -> int:
+        """
+        Return allocation count.
+        """
+
+        return len(
+            self._allocations,
+        )
+
+
+    def has_partition_case(
+        self,
+    ) -> bool:
+        """
+        Return True when a Partition Case
+        exists.
+        """
+
+        return (
+            self._partition_case
+            is not None
+        )
+
+
+    def has_allocations(
+        self,
+    ) -> bool:
+        """
+        Return True when allocations exist.
+        """
+
+        return bool(
+            self._allocations,
+        )
+
+
+    def total_allocated_area(
+        self,
+    ) -> Area:
+        """
+        Return total allocated area.
+        """
+
+        total = Area.zero()
+
+        for allocation in self._allocations:
+
+            total = (
+                total
+                + allocation.allocated_area
+            )
+
+        return total
+
+
+    def refresh(
+        self,
+    ) -> None:
+        """
+        Public refresh entry point.
+        """
+
+        self._refresh_partition()
+
+
+    def __repr__(
+        self,
+    ) -> str:
+
+        return (
+            "<PartitionWidget>"
+        )
+
+    # ---------------------------------------------------------
+    # Toolbar State
+    # ---------------------------------------------------------
+
+    def _update_toolbar_state(
+        self,
+    ) -> None:
+        """
+        Update toolbar buttons.
+        """
+
+        has_case = (
+            self._partition_case
+            is not None
+        )
+
+        has_allocations = (
+            len(
+                self._allocations,
+            )
+            > 0
+        )
+
+        self._toolbar._allocate_button.setEnabled(
+            True,
+        )
+
+        self._toolbar._save_button.setEnabled(
+            has_case,
+        )
+
+        self._toolbar._validate_button.setEnabled(
+            has_allocations,
+        )
+
+        self._toolbar._undo_button.setEnabled(
+            has_allocations,
+        )
+
+        self._toolbar._refresh_button.setEnabled(
+            True,
+        )
+
+        self._toolbar._report_button.setEnabled(
+            has_case,
+        )
 
     def _refresh_allocation_register(
         self,

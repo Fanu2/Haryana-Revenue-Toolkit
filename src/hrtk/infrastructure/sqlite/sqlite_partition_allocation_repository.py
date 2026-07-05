@@ -172,6 +172,32 @@ class SQLitePartitionAllocationRepository(
 
         return self.list()
 
+    def find_by_partition_case(
+        self,
+        partition_case_id: UUID,
+    ) -> list[PartitionAllocation]:
+
+        with SessionFactory() as session:
+
+            models = (
+                session.query(
+                    PartitionAllocationModel
+                )
+                .filter_by(
+                    partition_case_id=str(
+                        partition_case_id,
+                    ),
+                )
+                .all()
+            )
+
+            return [
+                PartitionAllocationMapper.to_domain(
+                    model,
+                )
+                for model in models
+            ]
+
     def exists(
         self,
         allocation_id: UUID,
