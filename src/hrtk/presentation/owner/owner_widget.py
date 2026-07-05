@@ -5,6 +5,7 @@ Owner Widget.
 """
 
 from __future__ import annotations
+from tkinter import dialog
 
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
@@ -113,7 +114,9 @@ class OwnerWidget(QWidget):
         """
         self._toolbar.enable_selection_actions(True)
 
-    def _add_owner(self) -> None:
+    def _add_owner(
+        self,
+    ) -> None:
 
         if self._current_village is None:
 
@@ -122,65 +125,93 @@ class OwnerWidget(QWidget):
                 "No Village Selected",
                 "Please select a village before adding an owner.",
             )
+
             return
 
-        dialog = OwnerDialog(FormMode.CREATE)
+        dialog = OwnerDialog(
+        FormMode.CREATE,
+        )
 
         if not dialog.exec():
+
             return
 
         owner = dialog.owner(
             self._current_village.id,
         )
 
-        print("Current Village ID :", self._current_village.id)
-        print("Owner Village ID   :", owner.village_id)
-
-        self._service.register(owner)
-
-        self._model.set_current_village(
-            self._current_village.id,
+        self._service.register(
+         owner,
         )
 
-        self._toolbar.clear_search()
+        self._refresh()
 
         MessageService.success(
             self,
             "Owner created successfully.",
         )
 
-    def _edit_owner(self) -> None:
-
-        owner = self._table.selected_owner()
-
-        if owner is None:
-            return
-
-        dialog = OwnerDialog(FormMode.EDIT)
-
-        dialog.set_owner(owner)
-
-        if not dialog.exec():
-            return
-
-        dialog.update_owner(owner)
-
-        self._model.set_current_village(
-            self._current_village.id
-        )
-
-        self._toolbar.clear_search()
-
-        MessageService.success(
+    def _edit_owner(
             self,
-            "Owner updated successfully.",
+        ) -> None:
+
+            owner = (
+                self._table.selected_owner()
+            )
+
+            if owner is None:
+
+                return
+
+            dialog = OwnerDialog(
+            FormMode.EDIT,
+            )
+
+            dialog.set_owner(
+                owner,
+            )
+
+            if not dialog.exec():
+
+                return
+
+        #
+        # Update the domain object
+        #
+
+            dialog.update_owner(
+                owner,
+            )
+
+        #
+        # Persist changes
+        #
+
+            self._service.update(
+                owner,
         )
 
-    def _deactivate_owner(self) -> None:
+        #
+        # Reload current village
+        #
 
-        owner = self._table.selected_owner()
+            self._refresh()
+
+            MessageService.success(
+                self,
+                "Owner updated successfully.",
+            )
+
+    def _deactivate_owner(
+        self,
+    ) -> None:
+
+        owner = (
+            self._table.selected_owner()
+        )
 
         if owner is None:
+
             return
 
         if not MessageService.confirm(
@@ -188,33 +219,49 @@ class OwnerWidget(QWidget):
             "Deactivate Owner",
             f"Deactivate owner '{owner.display_name}'?",
         ):
+
             return
 
-        self._service.deactivate(owner)
-
-        self._model.set_current_village(
-            self._current_village.id
+        self._service.deactivate(
+            owner,
         )
 
-        self._toolbar.clear_search()
+        self._refresh()
 
-        self._toolbar.enable_selection_actions(False)
+        self._toolbar.enable_selection_actions(
+            False,
+        )
 
         MessageService.success(
             self,
             "Owner deactivated successfully.",
         )
 
-    def _refresh(self) -> None:
+    def _refresh(
+        self,
+    ) -> None:
+        """
+    Reload owners for the
+        currently selected village.
+        """
 
         if self._current_village is None:
-            self._model.set_current_village(None)
-        else:
+
             self._model.set_current_village(
-                self._current_village.id
+                None,
+            )
+
+        else:
+
+            self._model.set_current_village(
+                self._current_village.id,
             )
 
         self._toolbar.clear_search()
+
+        self._toolbar.enable_selection_actions(
+            False,
+        )
 
     def _search(
         self,
@@ -243,4 +290,16 @@ class OwnerWidget(QWidget):
             sheet_name="Owners",
             headers=list(OwnerModel.HEADERS),
             rows=rows,
+        )
+
+    def update(
+        self,
+        owner: Owner,
+    ) -> None:
+        """
+            Persist changes to an existing owner.
+    """
+
+        self.repository.update(
+        owner,
         )

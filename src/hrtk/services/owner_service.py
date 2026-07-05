@@ -38,6 +38,18 @@ class OwnerService(BaseService[Owner]):
         """
         self.repository.add(owner)
 
+    def update(
+        self,
+        owner: Owner,
+    ) -> None:
+        """
+        Persist changes to an existing owner.
+        """
+
+        self.repository.update(
+            owner,
+        )
+
     def activate(
         self,
         owner: Owner,

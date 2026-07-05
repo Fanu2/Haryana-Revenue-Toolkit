@@ -208,7 +208,7 @@ class OwnershipWidget(QWidget):
         self,
     ) -> None:
         """
-        Load Khewats for selected village.
+        Load Khewats for the selected Village.
         """
 
         self._khewat_combo.blockSignals(
@@ -234,19 +234,22 @@ class OwnershipWidget(QWidget):
         )
 
         for khewat in (
-            self._context.khewat_service.all()
+            self._context
+            .khewat_service
+            .find_by_village(
+                village_id,
+            )
         ):
-
-            if khewat.village_id != village_id:
-                continue
 
             self._khewat_combo.addItem(
                 khewat.display_name,
                 khewat.id,
             )
 
+        
+
         self._khewat_combo.blockSignals(
-            False,
+                False,
         )
 
         if self._khewat_combo.count():
@@ -267,6 +270,7 @@ class OwnershipWidget(QWidget):
             self._status_label.setText(
                 "No Khewats found."
             )
+
 
     def _load_ownerships(
         self,
@@ -447,18 +451,28 @@ class OwnershipWidget(QWidget):
             FormMode.EDIT,
         )
 
+        village_id = UUID(
+        str(
+            self._village_combo.currentData(),
+            )
+        )
+
         owners = []
 
         for owner in (
-            self._context.owner_service.all()
+            self._context
+            .owner_service
+            .find_by_village(
+                village_id,
+        )
         ):
 
             owners.append(
                 (
-                    str(owner.id),
-                    owner.display_name,
+                str(owner.id),
+                owner.display_name,
                 )
-            )
+        )
 
         dialog.set_owners(
             owners,
