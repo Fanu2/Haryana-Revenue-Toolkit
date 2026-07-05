@@ -50,6 +50,14 @@ class JamabandiToolbar(QWidget):
 
         self._connect_signals()
 
+        #
+        # Initial state
+        #
+
+        self.update_state(
+            selected=False,
+        )
+
     # ---------------------------------------------------------
     # Widgets
     # ---------------------------------------------------------
@@ -91,7 +99,7 @@ class JamabandiToolbar(QWidget):
         )
 
         #
-        # Future Features
+        # Future features
         #
 
         self._print_button.setEnabled(
@@ -202,27 +210,93 @@ class JamabandiToolbar(QWidget):
     # Public API
     # ---------------------------------------------------------
 
-    def enable_selection_actions(
+    def update_state(
         self,
-        enabled: bool,
+        *,
+        selected: bool,
+        finalized: bool = False,
     ) -> None:
         """
-        Enable actions requiring
-        a selected Jamabandi.
+        Update the toolbar according to the
+        current workspace state.
         """
 
+        #
+        # Always available
+        #
+
+        self._add_button.setEnabled(
+            True,
+        )
+
+        self._refresh_button.setEnabled(
+            True,
+        )
+
+        #
+        # No selection
+        #
+
+        if not selected:
+
+            self._edit_button.setEnabled(
+                False,
+            )
+
+            self._delete_button.setEnabled(
+                False,
+            )
+
+            self._finalize_button.setEnabled(
+                False,
+            )
+
+            self._reopen_button.setEnabled(
+                False,
+            )
+
+            return
+
+        #
+        # Draft Jamabandi
+        #
+
+        if not finalized:
+
+            self._edit_button.setEnabled(
+                True,
+            )
+
+            self._delete_button.setEnabled(
+                True,
+            )
+
+            self._finalize_button.setEnabled(
+                True,
+            )
+
+            self._reopen_button.setEnabled(
+                False,
+            )
+
+            return
+
+        #
+        # Finalized Jamabandi
+        #
+
         self._edit_button.setEnabled(
-            enabled,
+            False,
         )
 
         self._delete_button.setEnabled(
-            enabled,
+            False,
         )
 
         self._finalize_button.setEnabled(
-            enabled,
+            False,
         )
 
         self._reopen_button.setEnabled(
-            enabled,
+            True,
         )

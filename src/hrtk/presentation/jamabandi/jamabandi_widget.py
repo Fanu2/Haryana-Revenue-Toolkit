@@ -28,7 +28,11 @@ from hrtk.presentation.jamabandi.tables.jamabandi_table import (
 
 class JamabandiWidget(QWidget):
     """
-    Jamabandi management workspace.
+    Workspace for managing Jamabandi records.
+
+    The workspace automatically tracks the
+    currently selected Village and displays only
+    the Jamabandis belonging to that Village.
     """
 
     def __init__(
@@ -68,7 +72,7 @@ class JamabandiWidget(QWidget):
         )
 
         self._status = QLabel(
-            "Ready."
+            "No village selected."
         )
 
     # ---------------------------------------------------------
@@ -144,23 +148,53 @@ class JamabandiWidget(QWidget):
     def _refresh(
         self,
     ) -> None:
+        """
+        Refresh the Jamabandi table for the
+        currently selected Village.
+        """
 
-        records = (
-            self._context
-            .jamabandi_service
-            .all()
-        )
+        if self._selected_village is None:
+
+            records = []
+
+            self._status.setText(
+                "No village selected.",
+            )
+
+        else:
+
+            records = (
+                self._context
+                .jamabandi_service
+                .by_village(
+                    self._selected_village.id,
+                )
+            )
+
+            finalized = sum(
+                1
+                for record in records
+                if record.finalized
+            )
+
+            draft = (
+                len(records)
+                - finalized
+            )
+
+            self._status.setText(
+                f"Village: {self._selected_village.name} | "
+                f"{len(records)} Jamabandi(s) | "
+                f"{draft} Draft | "
+                f"{finalized} Finalized"
+            )
 
         self._table.set_jamabandis(
             records,
         )
 
-        self._status.setText(
-            f"{len(records)} Jamabandi record(s)."
-        )
-
-        self._toolbar.enable_selection_actions(
-            False,
+        self._toolbar.update_state(
+            selected=False,
         )
 
     # ---------------------------------------------------------
@@ -176,13 +210,13 @@ class JamabandiWidget(QWidget):
             QMessageBox.information(
                 self,
                 "Jamabandi",
-                "Select a Village first.",
+                "Please select a Village first.",
             )
 
             return
 
         dialog = JamabandiDialog(
-            self._selected_village,
+            self._selected_village.id,
             parent=self,
         )
 
@@ -205,6 +239,17 @@ class JamabandiWidget(QWidget):
         )
 
         if record is None:
+
+            return
+
+        if record.finalized:
+
+            QMessageBox.information(
+                self,
+                "Jamabandi",
+                "Finalized Jamabandis cannot be edited.\n"
+                "Reopen the record first.",
+            )
 
             return
 
@@ -236,10 +281,21 @@ class JamabandiWidget(QWidget):
 
             return
 
+        if record.finalized:
+
+            QMessageBox.information(
+                self,
+                "Jamabandi",
+                "Finalized Jamabandis cannot be deleted.\n"
+                "Reopen the record first.",
+            )
+
+            return
+
         answer = QMessageBox.question(
             self,
-            "Delete",
-            "Delete selected Jamabandi?",
+            "Delete Jamabandi",
+            "Delete the selected Jamabandi?",
         )
 
         if answer != QMessageBox.Yes:
@@ -268,8 +324,38 @@ class JamabandiWidget(QWidget):
 
             return
 
+        if record.finalized:
+
+            QMessageBox.information(
+                self,
+                "Jamabandi",
+                "The selected Jamabandi is already finalized.",
+            )
+
+            return
+
+        answer = QMessageBox.question(
+            self,
+            "Finalize Jamabandi",
+            (
+                "Finalize the selected Jamabandi?\n\n"
+                "A finalized Jamabandi becomes read-only "
+                "until it is reopened."
+            ),
+        )
+
+        if answer != QMessageBox.Yes:
+
+            return
+
         self._context.jamabandi_service.finalize(
             record.id,
+        )
+
+        QMessageBox.information(
+            self,
+            "Jamabandi",
+            "Jamabandi finalized successfully.",
         )
 
         self._refresh()
@@ -286,8 +372,37 @@ class JamabandiWidget(QWidget):
 
             return
 
+        if not record.finalized:
+
+            QMessageBox.information(
+                self,
+                "Jamabandi",
+                "The selected Jamabandi is already open.",
+            )
+
+            return
+
+        answer = QMessageBox.question(
+            self,
+            "Reopen Jamabandi",
+            (
+                "Reopen the selected Jamabandi?\n\n"
+                "Editing will be enabled again."
+            ),
+        )
+
+        if answer != QMessageBox.Yes:
+
+            return
+
         self._context.jamabandi_service.reopen(
             record.id,
+        )
+
+        QMessageBox.information(
+            self,
+            "Jamabandi",
+            "Jamabandi reopened successfully.",
         )
 
         self._refresh()
@@ -299,14 +414,26 @@ class JamabandiWidget(QWidget):
     def _selection_changed(
         self,
     ) -> None:
+        """
+        Update the toolbar according to the
+        selected Jamabandi.
+        """
 
-        selected = (
+        record = (
             self._table.selected_jamabandi()
-            is not None
         )
 
-        self._toolbar.enable_selection_actions(
-            selected,
+        if record is None:
+
+            self._toolbar.update_state(
+                selected=False,
+            )
+
+            return
+
+        self._toolbar.update_state(
+            selected=True,
+            finalized=record.finalized,
         )
 
     def _village_changed(
@@ -314,19 +441,10 @@ class JamabandiWidget(QWidget):
         village,
     ) -> None:
         """
-        Track the currently selected village.
+        Respond to a change in the
+        currently selected Village.
         """
 
         self._selected_village = village
 
-        if village is None:
-
-            self._status.setText(
-                "No village selected.",
-            )
-
-        else:
-
-            self._status.setText(
-                f"Village: {village.name}",
-            )
+        self._refresh()
