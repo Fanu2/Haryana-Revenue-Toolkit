@@ -56,6 +56,7 @@ from hrtk.presentation.partition.partition_toolbar import (
     PartitionToolbar,
 )
 
+from hrtk.services.partition_service import PartitionCase
 from hrtk.ui.panels.summary_panel import (
     SummaryPanel,
 )
@@ -101,6 +102,8 @@ class PartitionWidget(
         self._allocations: list[
             PartitionAllocation
         ] = []
+
+        self._partition_case = None
 
         #
         # Cached Data
@@ -421,6 +424,10 @@ class PartitionWidget(
             self._load_khewats,
         )
 
+        self._village_combo.currentIndexChanged.connect(
+            self._load_jamabandis,
+        )
+
         self._khewat_combo.currentIndexChanged.connect(
             self._load_partition_data,
         )
@@ -485,18 +492,72 @@ class PartitionWidget(
 
         self._jamabandi_combo.clear()
 
-        self._jamabandi_combo.addItems(
-            (
-                "2023-24",
-                "2020-21",
-                "2017-18",
-                "2014-15",
+        village_id = self._village_combo.currentData()
+
+        if village_id is not None:
+
+            jamabandis = (
+                self._context
+                .jamabandi_service
+                .by_village(
+                    village_id,
             )
         )
+
+        for jamabandi in jamabandis:
+
+            self._jamabandi_combo.addItem(
+                jamabandi.year,
+                jamabandi.id,
+            )
 
         if self._village_combo.count():
 
             self._load_khewats()
+
+    def _load_jamabandis(
+        self,
+    ) -> None:
+        """
+        Load Jamabandis for the selected village.
+        """
+
+        self._jamabandi_combo.blockSignals(
+            True,
+        )
+
+        self._jamabandi_combo.clear()
+
+        village_id = (
+            self._village_combo.currentData()
+        )
+
+        if village_id is None:
+
+            self._jamabandi_combo.blockSignals(
+                False,
+            )
+
+            return
+
+        jamabandis = (
+            self._context
+            .jamabandi_service
+            .by_village(
+             village_id,
+            )
+        )
+
+        for jamabandi in jamabandis:
+
+            self._jamabandi_combo.addItem(
+                jamabandi.year,
+                jamabandi.id,
+            )
+
+        self._jamabandi_combo.blockSignals(
+            False,
+        )
 
     def _load_khewats(
         self,
@@ -817,7 +878,75 @@ class PartitionWidget(
                 f"{parcel.number}"
             ),
         )
-        
+
+    def _ensure_partition_case(
+        self,
+    ):
+        """
+        Ensure a PartitionCase exists for the
+        selected Village, Jamabandi and Khewat.
+        """
+
+        if self._partition_case is not None:
+
+            return self._partition_case
+
+        from uuid import uuid4
+
+        from hrtk.domain.partition_case import (
+            PartitionCase,
+        )
+
+        village_id = (
+            self._village_combo.currentData()
+        )
+
+        khewat_id = (
+            self._khewat_combo.currentData()
+        )
+
+        jamabandi_id = (
+            self._jamabandi_combo.currentData()
+        )
+
+        if (
+            village_id is None
+            or khewat_id is None
+            or jamabandi_id is None
+        ):
+
+            return None
+
+        jamabandi = (
+            self._context
+            .jamabandi_service
+            .by_id(
+                jamabandi_id,
+            )
+        )
+
+        if jamabandi is None:
+
+            return None
+
+        case = PartitionCase(
+            id=uuid4(),
+            village_id=village_id,
+            khewat_id=khewat_id,
+            jamabandi_year=jamabandi.year,
+        )
+
+        self._context.partition_service.register(
+            case,
+        )
+
+        self._partition_case = case
+
+        return case
+
+
+
+
     # ---------------------------------------------------------
     # Allocation
     # ---------------------------------------------------------
@@ -909,20 +1038,43 @@ class PartitionWidget(
 
             return
 
+        
+        #         
+        # Ensure a Partition Case exists
+        #
+
+        case = self._ensure_partition_case()
+
+        if case is None:
+
+            self._status.setText(
+                "Unable to create Partition Case.",
+            )
+
+            return
+
         #
         # Create Allocation
         #
 
         allocation = PartitionAllocation(
             id=uuid4(),
-            partition_case_id=uuid4(),
+            partition_case_id=case.id,
             owner_id=ownership.owner_id,
             parcel_number=parcel.number,
             allocated_area=allocated_area,
             remarks="",
         )
 
+        #
+        # Store Allocation
+        #
+
         self._allocations.append(
+            allocation,
+        )
+
+        self._context.partition_allocation_repository.add(
             allocation,
         )
 
@@ -931,7 +1083,6 @@ class PartitionWidget(
         #
 
         self._refresh_partition_ui()
-
         #
         # Refresh remaining area for
         # selected parcel.

@@ -68,6 +68,35 @@ from hrtk.services.jamabandi_service import (
     JamabandiService,
 )
 
+from hrtk.infrastructure.sqlite.sqlite_partition_case_repository import (
+    SQLitePartitionCaseRepository,
+)
+
+from hrtk.services.partition_service import (
+    PartitionService,
+)
+
+from hrtk.infrastructure.sqlite.sqlite_partition_allocation_repository import (
+    SQLitePartitionAllocationRepository,
+)
+
+from hrtk.infrastructure.sqlite.sqlite_khewat_parcel_repository import (
+    SQLiteKhewatParcelRepository,
+)
+
+from hrtk.services.khewat_parcel_service import (
+    KhewatParcelService,
+)
+
+from hrtk.infrastructure.sqlite.sqlite_khewat_parcel_repository import (
+    SQLiteKhewatParcelRepository,
+)
+
+from hrtk.services.khewat_parcel_service import (
+    KhewatParcelService,
+)
+
+
 
 
 class ApplicationContext:
@@ -130,12 +159,27 @@ class ApplicationContext:
             SQLiteParcelRepository()
         )
 
+        self._khewat_parcel_repository = (
+            SQLiteKhewatParcelRepository()
+        )
+
+        
+        
+
         self._ownership_repository = (
             SQLiteOwnershipRepository()
         )
 
         self._jamabandi_repository = (
         SQLiteJamabandiRepository()
+        )
+
+        self._partition_repository = (
+        SQLitePartitionCaseRepository()
+        )
+
+        self._partition_allocation_repository = (
+        SQLitePartitionAllocationRepository()
         )
 
         #
@@ -158,12 +202,22 @@ class ApplicationContext:
             self._parcel_repository,
         )
 
+        self._khewat_parcel_service = (
+            KhewatParcelService(
+                self._khewat_parcel_repository,
+            )
+        )
+
         self._ownership_service = OwnershipService(
         self._ownership_repository,
         )
 
         self._jamabandi_service = JamabandiService(
         self._jamabandi_repository,
+        )
+
+        self._partition_service = PartitionService(
+        self._partition_repository,
         )
 
         self._logging.logger.info(
@@ -233,6 +287,25 @@ class ApplicationContext:
         self,
     ) -> SQLiteJamabandiRepository:
         return self._jamabandi_repository
+    
+    @property
+    def partition_repository(
+        self,
+    ) -> SQLitePartitionCaseRepository:
+        return self._partition_repository
+    
+    @property
+    def partition_allocation_repository(
+        self,
+    ) -> SQLitePartitionAllocationRepository:
+        return self._partition_allocation_repository
+    
+    @property
+    def khewat_parcel_repository(
+        self,
+    ) -> SQLiteKhewatParcelRepository:
+        return self._khewat_parcel_repository
+
 
     # ---------------------------------------------------------
     # Services
@@ -273,6 +346,18 @@ class ApplicationContext:
         self,
     ) -> JamabandiService:
         return self._jamabandi_service
+    
+    @property
+    def partition_service(
+        self,
+    ) -> PartitionService:
+        return self._partition_service
+    
+    @property
+    def khewat_parcel_service(
+        self,
+    ) -> KhewatParcelService:
+        return self._khewat_parcel_service
 
     # ---------------------------------------------------------
     # Shutdown
