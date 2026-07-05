@@ -6,7 +6,7 @@
 
 
 
-Version: 1.0
+Version: 1.1
 
 
 
@@ -26,7 +26,7 @@ Last Updated: July 2026
 
 
 
-This document records the implementation status of every module in the Haryana Revenue Toolkit.
+This document records the implementation status of every module in the Haryana Revenue Toolkit (HRTK).
 
 
 
@@ -64,7 +64,7 @@ This document shall be updated whenever a module changes state.
 
 | Planned | Not started |
 
-| Design | Architecture under discussion |
+| Design | Architecture and planning |
 
 | Development | Active implementation |
 
@@ -98,13 +98,17 @@ This document shall be updated whenever a module changes state.
 
 | Owner | A2 | Frozen | 100% |
 
+| Jamabandi | A3 | Frozen | 100% |
+
 | Khewat | A3 | Frozen | 100% |
 
-| Khasra | A3 | Frozen | 100% |
+| Khasra (Parcel) | A3 | Frozen | 100% |
 
 | Ownership | A3 | Frozen | 100% |
 
-| Partition Workbench | A4 | Development | 85% |
+| Demo Seeder Framework | A3 | Frozen | 100% |
+
+| Partition Workspace | A4 | Design | 0% |
 
 | Allocation Engine | A4 | Planned | 0% |
 
@@ -140,7 +144,7 @@ Feature development is prohibited.
 
 
 
-Only:
+Only the following changes are permitted:
 
 
 
@@ -156,17 +160,23 @@ Current Frozen Modules
 
 
 
+\- Framework
+
 \- Dashboard
 
 \- Village
 
 \- Owner
 
+\- Jamabandi
+
 \- Khewat
 
-\- Khasra
+\- Khasra (Parcel)
 
 \- Ownership
+
+\- Demo Seeder Framework
 
 
 
@@ -182,57 +192,53 @@ Current Frozen Modules
 
 
 
-Release A4
+\*\*Release A4\*\*
 
 
 
-\## Current Module
+\## Current Focus
 
 
 
-Partition Workbench
+\*\*Partition Workspace\*\*
 
 
 
-\### Completed
+\### Objectives
 
 
 
-\- Workspace
+\- Workspace architecture
 
 \- Navigation
 
 \- Toolbar
 
-\- Owner Table
+\- Partition Case management
 
-\- Khasra Table
+\- Allocation workspace
 
-\- Summary Panel
+\- Validation workflow
 
-\- Validation Panel
+\- Status management
 
-\- Status Messages
+\- Summary panel
 
-\- Workspace Integration
-
-\- Live Owner Loading
-
-\- Live Khasra Loading
+\- Reporting foundation
 
 
 
-\### Remaining
+\### Future Components
 
 
 
 \- Allocation Engine
 
-\- Area Allocation
+\- Area distribution
 
-\- Validation Rules
+\- Validation rules
 
-\- Undo Allocation
+\- Undo / Redo
 
 \- Partition Register
 
@@ -258,11 +264,7 @@ Mutation (Intkal)
 
 
 
-Priority
-
-
-
-High
+Priority: High
 
 
 
@@ -278,11 +280,7 @@ Tatima Generator
 
 
 
-Priority
-
-
-
-High
+Priority: High
 
 
 
@@ -298,11 +296,7 @@ GIS Integration
 
 
 
-Priority
-
-
-
-Medium
+Priority: Medium
 
 
 
@@ -318,11 +312,7 @@ Revenue Reports
 
 
 
-Priority
-
-
-
-Medium
+Priority: Medium
 
 
 
@@ -338,11 +328,7 @@ Court \& Appeal Management
 
 
 
-Priority
-
-
-
-Low
+Priority: Low
 
 
 
@@ -358,11 +344,7 @@ Administration Suite
 
 
 
-Priority
-
-
-
-Low
+Priority: Low
 
 
 
@@ -374,7 +356,7 @@ Low
 
 
 
-Every module must progress through:
+Every module progresses through the following lifecycle:
 
 
 
@@ -422,7 +404,7 @@ Frozen
 
 
 
-No module may skip stages.
+No module may skip any stage.
 
 
 
@@ -450,15 +432,15 @@ A module is considered complete only when:
 
 \- Tests passed
 
-\- Commit created
+\- Git commit created
 
-\- Tag created
+\- Git tag created
 
 \- Repository pushed
 
 
 
-Only then may the module become Stable.
+Only then may the module become \*\*Stable\*\*.
 
 
 
@@ -470,43 +452,19 @@ Only then may the module become Stable.
 
 
 
-Release A1
+| Release | Status |
 
+|----------|--------|
 
+| A1 | ✅ Complete |
 
-✅ Complete
+| A2 | ✅ Complete |
 
+| A3 | ✅ Complete (Frozen) |
 
+| A4 | 🚧 Design |
 
-Release A2
-
-
-
-✅ Complete
-
-
-
-Release A3
-
-
-
-✅ Complete
-
-
-
-Release A4
-
-
-
-🚧 In Progress
-
-
-
-Release A5–A10
-
-
-
-📋 Planned
+| A5–A10 | 📋 Planned |
 
 
 
@@ -522,11 +480,15 @@ Current development focus:
 
 
 
-Partition Allocation Engine
+\*\*Partition Workspace\*\*
 
 
 
-This is the next major milestone following completion of the read-only Partition Workbench.
+The Seeder Framework has been completed and frozen as Release A3.
+
+
+
+Development will now focus on building the Partition Workspace, followed by the Allocation Engine and validation workflow.
 
 
 
@@ -550,6 +512,8 @@ HRTK will evolve into a complete desktop toolkit covering the full Haryana Reven
 
 \- Professional Software Engineering Practices
 
+\- Comprehensive Documentation
+
 
 
 \---
@@ -560,5 +524,5 @@ HRTK will evolve into a complete desktop toolkit covering the full Haryana Reven
 
 
 
-A module is complete only when it is stable, documented, tested and recoverable.
+A module is complete only when it is stable, documented, tested, versioned and recoverable.
 
