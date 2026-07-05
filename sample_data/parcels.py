@@ -1,29 +1,56 @@
 """
-Demo Parcel Numbers.
+Haryana Revenue Toolkit (HRTK)
+
+Parcel fixture data.
 """
 
 from __future__ import annotations
 
-
 PARCELS = [
 
-    "45",
+    {
+        "rectangle": 25,
+        "killa": "12",
+        "kanal": 8,
+        "marla": 0,
+        "sarsai": 0,
+        "remarks": "Irrigated land",
+    },
 
-    "46",
+    {
+        "rectangle": 25,
+        "killa": "13",
+        "kanal": 4,
+        "marla": 16,
+        "sarsai": 0,
+        "remarks": "Barani land",
+    },
 
-    "47",
+    {
+        "rectangle": 25,
+        "killa": "14",
+        "kanal": 7,
+        "marla": 4,
+        "sarsai": 0,
+        "remarks": "Agricultural land",
+    },
 
-    "48",
+    {
+        "rectangle": 26,
+        "killa": "1",
+        "kanal": 6,
+        "marla": 8,
+        "sarsai": 0,
+        "remarks": "Cultivated parcel",
+    },
 
-    "49",
+    {
+        "rectangle": 26,
+        "killa": "2",
+        "kanal": 5,
+        "marla": 12,
+        "sarsai": 0,
+        "remarks": "Canal irrigated",
+    },
 
-    "50",
-
-    "51",
-
-    "52",
-
-    "53",
-
-    "54",
 ]

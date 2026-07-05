@@ -26,6 +26,13 @@ from tools.seed.khewat_seeder import (
     KhewatSeeder,
 )
 
+from tools.seed.parcel_seeder import (
+    ParcelSeeder,
+)
+
+from tools.seed.ownership_seeder import (
+    OwnershipSeeder,
+)
 
 
 class DemoDataSeeder:
@@ -43,6 +50,7 @@ class DemoDataSeeder:
     def context(
         self,
     ) -> ApplicationContext:
+
         return self._context
 
     # ---------------------------------------------------------
@@ -66,15 +74,27 @@ class DemoDataSeeder:
         JamabandiSeeder(
             self.context,
         ).run()
-        
+
         KhewatSeeder(
             self.context,
         ).run()
+
+        ParcelSeeder(
+            self.context,
+        ).run()
+
+        OwnershipSeeder(
+            self.context,
+        ).run()
         
-        self._pending("Parcels")
-        self._pending("Ownerships")
-        self._pending("Partitions")
-        self._pending("Allocations")
+
+        self._pending(
+            "Partitions",
+        )
+
+        self._pending(
+            "Allocations",
+        )
 
         self._summary()
 
@@ -112,3 +132,15 @@ class DemoDataSeeder:
         print()
 
         self.context.shutdown()
+
+
+def main() -> None:
+    """
+    Run the demo database seeder.
+    """
+
+    DemoDataSeeder().run()
+
+
+if __name__ == "__main__":
+    main()
