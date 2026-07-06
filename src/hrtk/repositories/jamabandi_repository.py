@@ -1,169 +1,93 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Jamabandi Repository.
+Jamabandi Repository Interface.
 """
 
 from __future__ import annotations
 
+from typing import Protocol
 from uuid import UUID
 
-from hrtk.domain.jamabandi import Jamabandi
-from hrtk.repositories.base_repository import BaseRepository
+from hrtk.domain.jamabandi import (
+    Jamabandi,
+)
 
 
-class JamabandiRepository(
-    BaseRepository[
-        Jamabandi
-    ]
-):
+class JamabandiRepository(Protocol):
     """
-    Repository for Jamabandi entities.
+    Repository contract for Jamabandi entities.
     """
 
     # ---------------------------------------------------------
-    # Basic Queries
+    # Create / Update / Delete
     # ---------------------------------------------------------
 
-    def all(
+    def add(
         self,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return all Jamabandi records.
-        """
+        jamabandi: Jamabandi,
+    ) -> None:
+        ...
 
-        return list(
-            self._items.values()
-        )
+    def update(
+        self,
+        jamabandi: Jamabandi,
+    ) -> None:
+        ...
+
+    def remove(
+        self,
+        jamabandi_id: UUID,
+    ) -> None:
+        ...
+
+    # ---------------------------------------------------------
+    # Queries
+    # ---------------------------------------------------------
+
+    def get(
+        self,
+        jamabandi_id: UUID,
+    ) -> Jamabandi | None:
+        ...
+
+    def list(
+        self,
+    ) -> list[Jamabandi]:
+        ...
+
+    def exists(
+        self,
+        jamabandi_id: UUID,
+    ) -> bool:
+        ...
 
     def find_by_id(
         self,
-        entity_id: UUID,
+        jamabandi_id: UUID,
     ) -> Jamabandi | None:
-        """
-        Find a Jamabandi by ID.
-        """
-
-        return self._items.get(
-            entity_id,
-        )
-
-    # ---------------------------------------------------------
-    # Village Queries
-    # ---------------------------------------------------------
+        ...
 
     def find_by_village(
         self,
         village_id: UUID,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return all Jamabandis
-        belonging to a Village.
-        """
-
-        return [
-
-            jamabandi
-
-            for jamabandi
-
-            in self._items.values()
-
-            if (
-                jamabandi.village_id
-                ==
-                village_id
-            )
-        ]
-
-    # ---------------------------------------------------------
-    # Year Queries
-    # ---------------------------------------------------------
+    ) -> list[Jamabandi]:
+        ...
 
     def find_by_year(
         self,
         village_id: UUID,
         year: str,
     ) -> Jamabandi | None:
-        """
-        Return the Jamabandi
-        for a Village and Year.
-        """
-
-        for jamabandi in (
-            self._items.values()
-        ):
-
-            if (
-
-                jamabandi.village_id
-                ==
-                village_id
-
-                and
-
-                jamabandi.year
-                ==
-                year
-
-            ):
-
-                return jamabandi
-
-        return None
-
-    # ---------------------------------------------------------
-    # Active Records
-    # ---------------------------------------------------------
+        ...
 
     def active(
         self,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return active
-        Jamabandi records.
-        """
+    ) -> list[Jamabandi]:
+        ...
 
-        return [
-
-            jamabandi
-
-            for jamabandi
-
-            in self._items.values()
-
-            if jamabandi.active
-
-        ]
-
-    # ---------------------------------------------------------
-    # Finalized Records
-    # ---------------------------------------------------------
-
-    def finalized(
+    def by_status(
         self,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return finalized
-        Jamabandi records.
-        """
-
-        return [
-
-            jamabandi
-
-            for jamabandi
-
-            in self._items.values()
-
-            if jamabandi.finalized
-
-        ]
+        status: str,
+    ) -> list[Jamabandi]:
+        ...

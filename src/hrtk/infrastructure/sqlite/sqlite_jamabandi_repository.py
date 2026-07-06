@@ -89,25 +89,27 @@ class SQLiteJamabandiRepository(
                 jamabandi.village_id,
             )
 
+            model.khewat_id = str(
+                jamabandi.khewat_id,
+            )
+
             model.year = (
                 jamabandi.year
             )
 
-            model.mutation_no = (
-                jamabandi.mutation_no
+            model.khatauni_number = (
+                jamabandi.khatauni_number
             )
 
             model.remarks = (
                 jamabandi.remarks
             )
 
-            model.finalized = (
-                jamabandi.finalized
+            model.status = (
+                jamabandi.status
             )
 
-            model.active = (
-                jamabandi.active
-            )
+            model.active = model.active
 
             session.commit()
 
@@ -244,6 +246,9 @@ class SQLiteJamabandiRepository(
         village_id: UUID,
         year: str,
     ) -> Jamabandi | None:
+        """
+        Return the Jamabandi for a village and year.
+        """
 
         with SessionFactory() as session:
 
@@ -261,13 +266,10 @@ class SQLiteJamabandiRepository(
             )
 
             if model is None:
-
                 return None
 
-            return (
-                JamabandiMapper.to_domain(
-                    model,
-                )
+            return JamabandiMapper.to_domain(
+                model,
             )
 
     def active(
@@ -301,11 +303,10 @@ class SQLiteJamabandiRepository(
 
             ]
 
-    def finalized(
+    def by_status(
         self,
-    ) -> list[
-        Jamabandi,
-    ]:
+        status: str,
+    ) -> list[Jamabandi]:
 
         with SessionFactory() as session:
 
@@ -314,7 +315,7 @@ class SQLiteJamabandiRepository(
                     JamabandiModel,
                 )
                 .filter_by(
-                    finalized=True,
+                    status=status,
                 )
                 .order_by(
                     JamabandiModel.year,
@@ -323,11 +324,39 @@ class SQLiteJamabandiRepository(
             )
 
             return [
-
                 JamabandiMapper.to_domain(
                     model,
                 )
-
                 for model in models
-
             ]
+        
+    # ---------------------------------------------------------
+    # Compatibility Methods
+    # ---------------------------------------------------------
+
+    def list(
+        self,
+    ) -> list[Jamabandi]:
+        """
+        Return all Jamabandi records.
+        """
+        return self.all()
+
+    def get(
+        self,
+        entity_id,
+    ) -> Jamabandi | None:
+        """
+        Return a Jamabandi by id.
+        """
+        return self.find_by_id(entity_id)
+
+    def exists(
+        self,
+        entity_id,
+    ) -> bool:
+        """
+        Check whether a Jamabandi exists.
+        """
+        return self.get(entity_id) is not None
+    

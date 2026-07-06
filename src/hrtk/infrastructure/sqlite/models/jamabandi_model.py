@@ -6,91 +6,96 @@ SQLite Jamabandi Model.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from sqlalchemy import (
     Boolean,
-    Column,
     String,
-    Text,
+    UniqueConstraint,
 )
 
-from hrtk.infrastructure.sqlite.base import Base
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+)
+
+from hrtk.infrastructure.sqlite.base import (
+    Base,
+)
 
 
 class JamabandiModel(Base):
     """
-    SQLite model representing
-    a Jamabandi record.
+    SQLite representation of a Jamabandi.
     """
 
     __tablename__ = "jamabandis"
 
-    #
-    # Identity
-    #
+    __table_args__ = (
+        UniqueConstraint(
+            "village_id",
+            "khewat_id",
+            "year",
+            name="uq_jamabandi_village_khewat_year",
+        ),
+    )
 
-    id = Column(
-        String,
+    # ---------------------------------------------------------
+    # Primary Key
+    # ---------------------------------------------------------
+
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
+        default=lambda: str(uuid4()),
     )
 
-    #
-    # Relationships
-    #
+    # ---------------------------------------------------------
+    # References
+    # ---------------------------------------------------------
 
-    village_id = Column(
-        String,
+    village_id: Mapped[str] = mapped_column(
+        String(36),
         nullable=False,
-        index=True,
     )
 
-    #
-    # Record Details
-    #
-
-    year = Column(
-        String,
+    khewat_id: Mapped[str] = mapped_column(
+        String(36),
         nullable=False,
-        index=True,
     )
 
-    mutation_no = Column(
-        String,
+    # ---------------------------------------------------------
+    # Jamabandi Record
+    # ---------------------------------------------------------
+
+    year: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    khatauni_number: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+    )
+
+    # ---------------------------------------------------------
+    # Metadata
+    # ---------------------------------------------------------
+
+    remarks: Mapped[str] = mapped_column(
+        String(500),
         nullable=False,
         default="",
     )
 
-    remarks = Column(
-        Text,
+    status: Mapped[str] = mapped_column(
+        String(20),
         nullable=False,
-        default="",
+        default="Active",
     )
 
-    #
-    # Status
-    #
-
-    finalized = Column(
-        Boolean,
-        nullable=False,
-        default=False,
-    )
-
-    active = Column(
+    active: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         default=True,
     )
-
-    def __repr__(
-        self,
-    ) -> str:
-        """
-        Developer representation.
-        """
-
-        return (
-            "JamabandiModel("
-            f"year={self.year!r}, "
-            f"village_id={self.village_id!r}"
-            ")"
-        )

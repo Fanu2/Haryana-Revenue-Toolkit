@@ -16,45 +16,36 @@ from hrtk.repositories.jamabandi_repository import (
     JamabandiRepository,
 )
 
-from hrtk.services.base_service import (
-    BaseService,
-)
 
-
-class JamabandiService(
-    BaseService,
-):
+class JamabandiService:
     """
-    Service for Jamabandi records.
+    Application service for Jamabandi entities.
     """
 
     def __init__(
         self,
         repository: JamabandiRepository,
     ) -> None:
-        """
-        Initialize the service.
-        """
-
-        super().__init__(
-            repository,
-        )
 
         self._repository = repository
+
+    @property
+    def repository(
+        self,
+    ) -> JamabandiRepository:
+
+        return self._repository
 
     # ---------------------------------------------------------
     # CRUD
     # ---------------------------------------------------------
 
-    def register(
+    def add(
         self,
         jamabandi: Jamabandi,
     ) -> None:
-        """
-        Register a new Jamabandi.
-        """
 
-        self._repository.add(
+        self.repository.add(
             jamabandi,
         )
 
@@ -62,68 +53,61 @@ class JamabandiService(
         self,
         jamabandi: Jamabandi,
     ) -> None:
-        """
-        Update an existing Jamabandi.
-        """
 
-        self._repository.update(
+        self.repository.update(
             jamabandi,
         )
 
     def remove(
         self,
-        entity_id: UUID,
+        jamabandi_id: UUID,
     ) -> None:
-        """
-        Remove a Jamabandi.
-        """
 
-        self._repository.remove(
-            entity_id,
+        self.repository.remove(
+            jamabandi_id,
         )
 
     # ---------------------------------------------------------
     # Queries
     # ---------------------------------------------------------
 
+    def get(
+        self,
+        jamabandi_id: UUID,
+    ) -> Jamabandi | None:
+
+        return self.repository.get(
+            jamabandi_id,
+        )
+
     def all(
         self,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return all Jamabandis.
-        """
+    ) -> list[Jamabandi]:
 
-        return self._repository.all()
+        return self.repository.list()
 
-    def by_id(
+    def list(
         self,
-        entity_id: UUID,
-    ) -> Jamabandi | None:
-        """
-        Return a Jamabandi by ID.
-        """
+    ) -> list[Jamabandi]:
 
-        return self._repository.find_by_id(
-            entity_id,
+        return self.repository.list()
+
+    def exists(
+        self,
+        jamabandi_id: UUID,
+    ) -> bool:
+
+        return self.repository.exists(
+            jamabandi_id,
         )
 
     def by_village(
         self,
         village_id: UUID,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return all Jamabandis
-        for a Village.
-        """
+    ) -> list[Jamabandi]:
 
-        return (
-            self._repository.find_by_village(
-                village_id,
-            )
+        return self.repository.find_by_village(
+            village_id,
         )
 
     def by_year(
@@ -131,115 +115,23 @@ class JamabandiService(
         village_id: UUID,
         year: str,
     ) -> Jamabandi | None:
-        """
-        Return a Jamabandi for
-        Village + Year.
-        """
 
-        return (
-            self._repository.find_by_year(
-                village_id,
-                year,
-            )
+        return self.repository.find_by_year(
+            village_id,
+            year,
         )
 
     def active(
         self,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return active Jamabandis.
-        """
+    ) -> list[Jamabandi]:
 
-        return (
-            self._repository.active()
-        )
+        return self.repository.active()
 
-    def finalized(
+    def by_status(
         self,
-    ) -> list[
-        Jamabandi
-    ]:
-        """
-        Return finalized
-        Jamabandis.
-        """
+        status: str,
+    ) -> list[Jamabandi]:
 
-        return (
-            self._repository.finalized()
-        )
-
-    # ---------------------------------------------------------
-    # Business Rules
-    # ---------------------------------------------------------
-
-    def exists(
-        self,
-        village_id: UUID,
-        year: str,
-    ) -> bool:
-        """
-        Determine whether a
-        Jamabandi already exists.
-        """
-
-        return (
-
-            self.by_year(
-                village_id,
-                year,
-            )
-
-            is not None
-
-        )
-
-    def finalize(
-        self,
-        entity_id: UUID,
-    ) -> None:
-        """
-        Finalize a Jamabandi.
-        """
-
-        jamabandi = self.by_id(
-            entity_id,
-        )
-
-        if jamabandi is None:
-
-            raise ValueError(
-                "Jamabandi not found."
-            )
-
-        jamabandi.finalize()
-
-        self.update(
-            jamabandi,
-        )
-
-    def reopen(
-        self,
-        entity_id: UUID,
-    ) -> None:
-        """
-        Re-open a finalized
-        Jamabandi.
-        """
-
-        jamabandi = self.by_id(
-            entity_id,
-        )
-
-        if jamabandi is None:
-
-            raise ValueError(
-                "Jamabandi not found."
-            )
-
-        jamabandi.reopen()
-
-        self.update(
-            jamabandi,
+        return self.repository.by_status(
+            status,
         )

@@ -19,21 +19,42 @@ from hrtk.infrastructure.sqlite.models.jamabandi_model import (
 
 class JamabandiMapper:
     """
-    Maps Jamabandi <-> JamabandiModel.
+    Maps between Jamabandi domain entities
+    and SQLite models.
     """
 
-    # ---------------------------------------------------------
-    # Domain -> SQLite
-    # ---------------------------------------------------------
+    @staticmethod
+    def to_domain(
+        model: JamabandiModel,
+    ) -> Jamabandi:
+
+        return Jamabandi(
+
+            id=UUID(model.id),
+
+            village_id=UUID(
+                model.village_id,
+            ),
+
+            khewat_id=UUID(
+                model.khewat_id,
+            ),
+
+            year=model.year,
+
+            khatauni_number=(
+                model.khatauni_number
+            ),
+
+            remarks=model.remarks,
+
+            status=model.status,
+        )
 
     @staticmethod
     def to_model(
         jamabandi: Jamabandi,
     ) -> JamabandiModel:
-        """
-        Convert a domain entity into
-        a SQLite model.
-        """
 
         return JamabandiModel(
 
@@ -45,47 +66,19 @@ class JamabandiMapper:
                 jamabandi.village_id,
             ),
 
+            khewat_id=str(
+                jamabandi.khewat_id,
+            ),
+
             year=jamabandi.year,
 
-            mutation_no=jamabandi.mutation_no,
+            khatauni_number=(
+                jamabandi.khatauni_number
+            ),
 
             remarks=jamabandi.remarks,
 
-            finalized=jamabandi.finalized,
+            status=jamabandi.status,
 
-            active=jamabandi.active,
-        )
-
-    # ---------------------------------------------------------
-    # SQLite -> Domain
-    # ---------------------------------------------------------
-
-    @staticmethod
-    def to_domain(
-        model: JamabandiModel,
-    ) -> Jamabandi:
-        """
-        Convert a SQLite model into
-        a domain entity.
-        """
-
-        return Jamabandi(
-
-            id=UUID(
-                model.id,
-            ),
-
-            village_id=UUID(
-                model.village_id,
-            ),
-
-            year=model.year,
-
-            mutation_no=model.mutation_no,
-
-            remarks=model.remarks,
-
-            finalized=model.finalized,
-
-            active=model.active,
+            active=True,
         )

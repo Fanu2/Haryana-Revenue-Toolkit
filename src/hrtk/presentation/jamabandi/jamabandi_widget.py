@@ -6,38 +6,42 @@ Jamabandi Workspace.
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
+
 from PySide6.QtWidgets import (
+    QComboBox,
+    QGroupBox,
+    QHBoxLayout,
     QLabel,
-    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
-from hrtk.presentation.jamabandi.dialogs.jamabandi_dialog import (
-    JamabandiDialog,
+from hrtk.application.application_context import (
+    ApplicationContext,
 )
 
 from hrtk.presentation.jamabandi.jamabandi_toolbar import (
     JamabandiToolbar,
 )
 
-from hrtk.presentation.jamabandi.tables.jamabandi_table import (
+from hrtk.presentation.jamabandi.jamabandi_table import (
     JamabandiTable,
 )
 
 
 class JamabandiWidget(QWidget):
     """
-    Workspace for managing Jamabandi records.
-
-    The workspace automatically tracks the
-    currently selected Village and displays only
-    the Jamabandis belonging to that Village.
+    Workspace for managing
+    Jamabandi records.
     """
 
     def __init__(
         self,
-        context,
+        context: ApplicationContext,
         parent=None,
     ) -> None:
 
@@ -45,34 +49,76 @@ class JamabandiWidget(QWidget):
 
         self._context = context
 
-        self._selected_village = None
-
         self._create_widgets()
 
         self._build_layout()
 
         self._connect_signals()
 
-        self._refresh()
+        self.refresh()
 
     # ---------------------------------------------------------
-    # Widgets
+    # Widget Creation
     # ---------------------------------------------------------
 
     def _create_widgets(
         self,
     ) -> None:
 
-        self._toolbar = (
+        #
+        # Toolbar
+        #
+
+        self.toolbar = (
             JamabandiToolbar()
         )
 
-        self._table = (
+        #
+        # Selection
+        #
+
+        self.village_combo = QComboBox()
+
+        self.year_combo = QComboBox()
+
+        self.khewat_combo = QComboBox()
+
+        #
+        # Table
+        #
+
+        self.table = (
             JamabandiTable()
         )
 
-        self._status = QLabel(
-            "No village selected."
+        #
+        # Buttons
+        #
+
+        self.add_button = QPushButton(
+            "Add",
+        )
+
+        self.edit_button = QPushButton(
+            "Edit",
+        )
+
+        self.delete_button = QPushButton(
+            "Delete",
+        )
+
+        self.refresh_button = QPushButton(
+            "Refresh",
+        )
+
+        #
+        # Remarks
+        #
+
+        self.remarks_edit = QTextEdit()
+
+        self.remarks_edit.setMaximumHeight(
+            80,
         )
 
     # ---------------------------------------------------------
@@ -83,22 +129,140 @@ class JamabandiWidget(QWidget):
         self,
     ) -> None:
 
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
+
+        #
+        # Toolbar
+        #
 
         layout.addWidget(
-            self._toolbar,
+            self.toolbar,
+        )
+
+        #
+        # Selection Group
+        #
+
+        selection_group = QGroupBox(
+            "Selection",
+        )
+
+        selection_layout = QHBoxLayout()
+
+        #
+        # Village
+        #
+
+        selection_layout.addWidget(
+            QLabel("Village"),
+        )
+
+        selection_layout.addWidget(
+            self.village_combo,
+        )
+
+        #
+        # Jamabandi Year
+        #
+
+        selection_layout.addWidget(
+            QLabel("Year"),
+        )
+
+        selection_layout.addWidget(
+            self.year_combo,
+        )
+
+        #
+        # Khewat
+        #
+
+        selection_layout.addWidget(
+            QLabel("Khewat"),
+        )
+
+        selection_layout.addWidget(
+            self.khewat_combo,
+        )
+
+        selection_group.setLayout(
+            selection_layout,
         )
 
         layout.addWidget(
-            self._table,
+            selection_group,
+        )
+
+        #
+        # Jamabandi Records
+        #
+
+        splitter = QSplitter(
+            Qt.Vertical,
+        )
+
+        splitter.addWidget(
+            self.table,
+        )
+
+        remarks_group = QGroupBox(
+            "Remarks",
+        )
+
+        remarks_layout = QVBoxLayout()
+
+        remarks_layout.addWidget(
+            self.remarks_edit,
+        )
+
+        remarks_group.setLayout(
+            remarks_layout,
+        )
+
+        splitter.addWidget(
+            remarks_group,
+        )
+
+        splitter.setStretchFactor(
+            0,
+            5,
+        )
+
+        splitter.setStretchFactor(
+            1,
+            1,
         )
 
         layout.addWidget(
-            self._status,
+            splitter,
         )
 
-        self.setLayout(
-            layout,
+        #
+        # Action Buttons
+        #
+
+        button_layout = QHBoxLayout()
+
+        button_layout.addStretch()
+
+        button_layout.addWidget(
+            self.add_button,
+        )
+
+        button_layout.addWidget(
+            self.edit_button,
+        )
+
+        button_layout.addWidget(
+            self.delete_button,
+        )
+
+        button_layout.addWidget(
+            self.refresh_button,
+        )
+
+        layout.addLayout(
+            button_layout,
         )
 
     # ---------------------------------------------------------
@@ -109,342 +273,266 @@ class JamabandiWidget(QWidget):
         self,
     ) -> None:
 
-        self._toolbar.add_requested.connect(
-            self._new,
+        #
+        # Toolbar
+        #
+
+        self.toolbar.refresh_requested.connect(
+            self.refresh,
         )
 
-        self._toolbar.edit_requested.connect(
-            self._edit,
+        #
+        # Buttons
+        #
+
+        self.add_button.clicked.connect(
+            self.add_jamabandi,
         )
 
-        self._toolbar.delete_requested.connect(
-            self._delete,
+        self.edit_button.clicked.connect(
+            self.edit_jamabandi,
         )
 
-        self._toolbar.refresh_requested.connect(
-            self._refresh,
+        self.delete_button.clicked.connect(
+            self.delete_jamabandi,
         )
 
-        self._toolbar.finalize_requested.connect(
-            self._finalize,
+        self.refresh_button.clicked.connect(
+            self.refresh,
         )
 
-        self._toolbar.reopen_requested.connect(
-            self._reopen,
+        #
+        # Selection
+        #
+
+        self.village_combo.currentIndexChanged.connect(
+            lambda: self._load_khewats(),
         )
 
-        self._table.selectionModel().selectionChanged.connect(
-            self._selection_changed,
+        self.year_combo.currentIndexChanged.connect(
+            self.refresh,
         )
 
-        self._context.selection.village_changed.connect(
-            self._village_changed,
+        self.khewat_combo.currentIndexChanged.connect(
+            self.refresh,
         )
+
+    # ---------------------------------------------------------
+    # Refresh
+    # ---------------------------------------------------------
+
+    def refresh(
+        self,
+    ) -> None:
+        """
+        Refresh the workspace.
+        """
+
+        self._load_villages()
+
+        self._load_jamabandis()
+
+        self._load_khewats()
+
+        self._load_table()
 
     # ---------------------------------------------------------
     # Loading
     # ---------------------------------------------------------
 
-    def _refresh(
+    def _load_villages(
         self,
     ) -> None:
         """
-        Refresh the Jamabandi table for the
-        currently selected Village.
+        Load villages.
         """
 
-        if self._selected_village is None:
+        self.village_combo.blockSignals(True)
 
-            records = []
+        self.village_combo.clear()
 
-            self._status.setText(
-                "No village selected.",
-            )
-
-        else:
-
-            records = (
-                self._context
-                .jamabandi_service
-                .by_village(
-                    self._selected_village.id,
-                )
-            )
-
-            finalized = sum(
-                1
-                for record in records
-                if record.finalized
-            )
-
-            draft = (
-                len(records)
-                - finalized
-            )
-
-            self._status.setText(
-                f"Village: {self._selected_village.name} | "
-                f"{len(records)} Jamabandi(s) | "
-                f"{draft} Draft | "
-                f"{finalized} Finalized"
-            )
-
-        self._table.set_jamabandis(
-            records,
+        villages = (
+            self._context
+            .village_service
+            .all()
         )
 
-        self._toolbar.update_state(
-            selected=False,
+        for village in villages:
+
+            self.village_combo.addItem(
+                village.name,
+                village.id,
+            )
+
+        self.village_combo.blockSignals(False)
+
+    def _load_jamabandis(
+        self,
+    ) -> None:
+        """
+        Load Jamabandi years.
+        """
+
+        self.year_combo.blockSignals(True)
+
+        self.year_combo.clear()
+
+        jamabandis = (
+            self._context
+            .jamabandi_service
+            .list()
         )
 
-    # ---------------------------------------------------------
-    # CRUD
-    # ---------------------------------------------------------
+        years = sorted(
+            {
+                jamabandi.year
+                for jamabandi in jamabandis
+            }
+        )
 
-    def _new(
+        for year in years:
+
+            self.year_combo.addItem(
+                year,
+            )
+
+        self.year_combo.blockSignals(False)
+
+    def _load_khewats(
         self,
     ) -> None:
 
-        if self._selected_village is None:
+        from uuid import UUID
 
-            QMessageBox.information(
-                self,
-                "Jamabandi",
-                "Please select a Village first.",
-            )
+        self.khewat_combo.blockSignals(True)
+
+        self.khewat_combo.clear()
+
+        village_id = (
+            self.village_combo.currentData()
+        )
+
+        if village_id is None:
+
+            self.khewat_combo.blockSignals(False)
 
             return
 
+        village_id = UUID(
+            str(village_id),
+        )
+
+        khewats = (
+            self._context
+            .khewat_service
+            .find_by_village(
+                village_id,
+            )
+        )
+
+        for khewat in khewats:
+
+            self.khewat_combo.addItem(
+                khewat.display_name,
+                khewat.id,
+            )
+
+        self.khewat_combo.blockSignals(False)
+
+    def _load_table(
+        self,
+    ) -> None:
+        """
+        Load Jamabandi records into the table.
+        """
+
+        records = (
+            self._context
+            .jamabandi_service
+            .list()
+        )
+
+        year = (
+            self.year_combo.currentText()
+        )
+
+        if year:
+
+            records = [
+                record
+                for record in records
+                if record.year == year
+            ]
+
+        self.table.model.set_records(
+            records,
+        )
+    # ---------------------------------------------------------
+    # CRUD Operations
+    # ---------------------------------------------------------
+
+    def add_jamabandi(
+        self,
+    ) -> None:
+        """
+        Open Add Jamabandi dialog.
+        """
+
+        from hrtk.presentation.jamabandi.jamabandi_dialog import (
+            JamabandiDialog,
+        )
+
         dialog = JamabandiDialog(
-            self._selected_village.id,
+            context=self._context,
             parent=self,
         )
 
-        if not dialog.exec():
+        if dialog.exec():
 
-            return
+            self.refresh()
 
-        self._context.jamabandi_service.register(
-            dialog.jamabandi(),
-        )
-
-        self._refresh()
-
-    def _edit(
+    def edit_jamabandi(
         self,
     ) -> None:
+        """
+        Edit the selected Jamabandi.
+        """
 
-        record = (
-            self._table.selected_jamabandi()
-        )
+        record = self.table.selected_jamabandi()
 
         if record is None:
-
             return
 
-        if record.finalized:
-
-            QMessageBox.information(
-                self,
-                "Jamabandi",
-                "Finalized Jamabandis cannot be edited.\n"
-                "Reopen the record first.",
-            )
-
-            return
+        from hrtk.presentation.jamabandi.jamabandi_dialog import (
+            JamabandiDialog,
+        )
 
         dialog = JamabandiDialog(
-            record.village_id,
-            record,
-            self,
+            context=self._context,
+            jamabandi=record,
+            parent=self,
         )
 
-        if not dialog.exec():
+        if dialog.exec():
 
-            return
+            self.refresh()
 
-        self._context.jamabandi_service.update(
-            dialog.jamabandi(),
-        )
-
-        self._refresh()
-
-    def _delete(
-        self,
-    ) -> None:
-
-        record = (
-            self._table.selected_jamabandi()
-        )
-
-        if record is None:
-
-            return
-
-        if record.finalized:
-
-            QMessageBox.information(
-                self,
-                "Jamabandi",
-                "Finalized Jamabandis cannot be deleted.\n"
-                "Reopen the record first.",
-            )
-
-            return
-
-        answer = QMessageBox.question(
-            self,
-            "Delete Jamabandi",
-            "Delete the selected Jamabandi?",
-        )
-
-        if answer != QMessageBox.Yes:
-
-            return
-
-        self._context.jamabandi_service.remove(
-            record.id,
-        )
-
-        self._refresh()
-
-    # ---------------------------------------------------------
-    # Status Changes
-    # ---------------------------------------------------------
-
-    def _finalize(
-        self,
-    ) -> None:
-
-        record = (
-            self._table.selected_jamabandi()
-        )
-
-        if record is None:
-
-            return
-
-        if record.finalized:
-
-            QMessageBox.information(
-                self,
-                "Jamabandi",
-                "The selected Jamabandi is already finalized.",
-            )
-
-            return
-
-        answer = QMessageBox.question(
-            self,
-            "Finalize Jamabandi",
-            (
-                "Finalize the selected Jamabandi?\n\n"
-                "A finalized Jamabandi becomes read-only "
-                "until it is reopened."
-            ),
-        )
-
-        if answer != QMessageBox.Yes:
-
-            return
-
-        self._context.jamabandi_service.finalize(
-            record.id,
-        )
-
-        QMessageBox.information(
-            self,
-            "Jamabandi",
-            "Jamabandi finalized successfully.",
-        )
-
-        self._refresh()
-
-    def _reopen(
-        self,
-    ) -> None:
-
-        record = (
-            self._table.selected_jamabandi()
-        )
-
-        if record is None:
-
-            return
-
-        if not record.finalized:
-
-            QMessageBox.information(
-                self,
-                "Jamabandi",
-                "The selected Jamabandi is already open.",
-            )
-
-            return
-
-        answer = QMessageBox.question(
-            self,
-            "Reopen Jamabandi",
-            (
-                "Reopen the selected Jamabandi?\n\n"
-                "Editing will be enabled again."
-            ),
-        )
-
-        if answer != QMessageBox.Yes:
-
-            return
-
-        self._context.jamabandi_service.reopen(
-            record.id,
-        )
-
-        QMessageBox.information(
-            self,
-            "Jamabandi",
-            "Jamabandi reopened successfully.",
-        )
-
-        self._refresh()
-
-    # ---------------------------------------------------------
-    # Selection
-    # ---------------------------------------------------------
-
-    def _selection_changed(
+    def delete_jamabandi(
         self,
     ) -> None:
         """
-        Update the toolbar according to the
-        selected Jamabandi.
+        Delete the selected Jamabandi.
         """
 
-        record = (
-            self._table.selected_jamabandi()
-        )
+        record = self.table.selected_jamabandi()
 
         if record is None:
-
-            self._toolbar.update_state(
-                selected=False,
-            )
-
             return
 
-        self._toolbar.update_state(
-            selected=True,
-            finalized=record.finalized,
-        )
+        self._context\
+            .jamabandi_service\
+            .remove(
+                record.id,
+            )
 
-    def _village_changed(
-        self,
-        village,
-    ) -> None:
-        """
-        Respond to a change in the
-        currently selected Village.
-        """
-
-        self._selected_village = village
-
-        self._refresh()
+        self.refresh()
