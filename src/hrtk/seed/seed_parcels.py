@@ -23,10 +23,14 @@ from hrtk.domain.value_objects.parcel_number import (
 )
 
 from hrtk.seed.sample_data import (
-    PARCELS,
     DEFAULT_KANAL,
     DEFAULT_MARLA,
     DEFAULT_SARSAI,
+    PARCELS,
+)
+
+from hrtk.seed.seed_context import (
+    create_context,
 )
 
 
@@ -46,7 +50,9 @@ def seed_parcels(
             killa=killa,
         )
 
-        if service.find_by_number(number):
+        if service.exists(
+            number,
+        ):
 
             print(
                 f"Parcel {rectangle}//{killa} already exists."
@@ -58,22 +64,36 @@ def seed_parcels(
 
             number=number,
 
-            area=Area(
+            area=Area.from_kms(
                 kanal=DEFAULT_KANAL,
                 marla=DEFAULT_MARLA,
-                sarsai=DEFAULT_SARSAI,
+                 sarsai=DEFAULT_SARSAI,
             ),
 
             remarks="Development Seed",
-
-            active=True,
         )
 
-        service.register(
+        service.create(
             parcel,
         )
 
         print(
-            f"Created Parcel "
+            f"Created Parcel : "
             f"{rectangle}//{killa}"
         )
+
+
+def main() -> None:
+    """
+    Run the parcel seeder.
+    """
+
+    context = create_context()
+
+    seed_parcels(
+        context,
+    )
+
+
+if __name__ == "__main__":
+    main()

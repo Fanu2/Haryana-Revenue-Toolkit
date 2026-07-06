@@ -330,6 +330,42 @@ class SQLiteJamabandiRepository(
                 for model in models
             ]
         
+
+    def find_by_khewat(
+        self,
+        khewat_id: UUID,
+    ) -> list[
+        Jamabandi,
+    ]:
+        """
+        Return all Jamabandi records for a Khewat.
+        """
+
+        with SessionFactory() as session:
+
+            models = (
+                session.query(
+                    JamabandiModel,
+                )
+                .filter_by(
+                    khewat_id=str(
+                        khewat_id,
+                    ),
+                )
+                .order_by(
+                    JamabandiModel.year,
+                )
+                .all()
+            )
+
+            return [
+                JamabandiMapper.to_domain(
+                    model,
+                )
+                for model in models
+            ]
+
+        
     # ---------------------------------------------------------
     # Compatibility Methods
     # ---------------------------------------------------------

@@ -91,3 +91,12 @@ class JamabandiRepository(Protocol):
         status: str,
     ) -> list[Jamabandi]:
         ...
+
+    def find_by_khewat(
+        self,
+        khewat_id: UUID,
+    ) -> list[Jamabandi]:
+        """
+        Return all Jamabandi records for a Khewat.
+        """
+        ...

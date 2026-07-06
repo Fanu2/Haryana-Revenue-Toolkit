@@ -15,10 +15,14 @@ from hrtk.domain.village import (
 )
 
 from hrtk.seed.sample_data import (
-    STATE,
     DISTRICT,
+    STATE,
     TEHSIL,
     VILLAGES,
+)
+
+from hrtk.seed.seed_context import (
+    create_context,
 )
 
 
@@ -31,11 +35,16 @@ def seed_villages(
 
     service = context.village_service
 
-    for index, village_name in enumerate(VILLAGES, start=1):
+    for index, village_name in enumerate(
+        VILLAGES,
+        start=1,
+    ):
 
         code = f"V{index:03d}"
 
-        if service.find_by_code(code) is not None:
+        if service.find_by_code(
+            code,
+        ) is not None:
 
             print(
                 f"Village {code} already exists."
@@ -56,5 +65,22 @@ def seed_villages(
         )
 
         print(
-            f"Created Village : {village.display_name}"
+            f"Created Village : "
+            f"{village.display_name}"
         )
+
+
+def main() -> None:
+    """
+    Run the village seeder.
+    """
+
+    context = create_context()
+
+    seed_villages(
+        context,
+    )
+
+
+if __name__ == "__main__":
+    main()

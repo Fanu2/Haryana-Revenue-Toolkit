@@ -15,8 +15,12 @@ from hrtk.domain.khewat import (
 )
 
 from hrtk.seed.sample_data import (
-    KHEWAT_NUMBERS,
     JAMABANDI_YEARS,
+    KHEWAT_NUMBERS,
+)
+
+from hrtk.seed.seed_context import (
+    create_context,
 )
 
 
@@ -37,10 +41,11 @@ def seed_khewats(
 
     if village is None:
 
-        raise RuntimeError(
-            "Village V001 not found. "
-            "Run seed_villages first."
+        print(
+            "Village V001 not found."
         )
+
+        return
 
     service = context.khewat_service
 
@@ -74,7 +79,6 @@ def seed_khewats(
             jamabandi_year=JAMABANDI_YEARS[-1],
 
             remarks="Development Seed",
-
         )
 
         service.register(
@@ -82,5 +86,22 @@ def seed_khewats(
         )
 
         print(
-            f"Created Khewat {khewat_no}"
+            f"Created Khewat : "
+            f"{khewat_no}"
         )
+
+
+def main() -> None:
+    """
+    Run the Khewat seeder.
+    """
+
+    context = create_context()
+
+    seed_khewats(
+        context,
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -79,6 +79,30 @@ class JamabandiService:
         return self.repository.get(
             jamabandi_id,
         )
+    
+    def by_id(
+        self,
+        jamabandi_id: UUID,
+    ) -> Jamabandi | None:
+        """
+        Compatibility method.
+        """
+
+        return self.get(
+            jamabandi_id,
+        )
+    
+    def register(
+        self,
+        jamabandi: Jamabandi,
+    ) -> None:
+        """
+        Compatibility method.
+        """
+
+        self.add(
+            jamabandi,
+        )
 
     def all(
         self,
@@ -108,6 +132,19 @@ class JamabandiService:
 
         return self.repository.find_by_village(
             village_id,
+        )
+    
+    def by_khewat(
+        self,
+        khewat_id: UUID,
+    ) -> list[Jamabandi]:
+        """
+        Return all Jamabandi records
+        for a Khewat.
+        """
+
+        return self.repository.find_by_khewat(
+            khewat_id,
         )
 
     def by_year(

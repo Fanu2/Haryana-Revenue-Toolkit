@@ -1,7 +1,7 @@
 """
 Haryana Revenue Toolkit (HRTK)
 
-Development Owner Seeder.
+Development Ownership Seeder.
 """
 
 from __future__ import annotations
@@ -10,85 +10,142 @@ from hrtk.application.application_context import (
     ApplicationContext,
 )
 
-from hrtk.domain.owner import (
-    Owner,
+from hrtk.domain.ownership import (
+    Ownership,
 )
 
-from hrtk.seed.sample_data import (
-    OWNER_NAMES,
+from hrtk.domain.value_objects.fraction import (
+    Fraction,
+)
+
+from hrtk.seed.seed_context import (
+    create_context,
 )
 
 
-def seed_owners(
+def seed_ownership(
     context: ApplicationContext,
 ) -> None:
     """
-    Seed development owners.
+    Seed development ownership records.
     """
 
+    owner_service = context.owner_service
+    khewat_service = context.khewat_service
+    ownership_service = context.ownership_service
+
     village = (
-        context
-        .village_service
-        .find_by_code(
+        context.village_service.find_by_code(
             "V001",
         )
     )
 
     if village is None:
 
-        raise RuntimeError(
-            "Village V001 not found. "
-            "Run seed_villages first."
+        print(
+            "Village V001 not found."
         )
 
-    service = context.owner_service
+        return
 
-    for index, owner_name in enumerate(
-        OWNER_NAMES,
-        start=1,
-    ):
+    #
+    # Development ownership pattern
+    #
 
-        owner_code = (
-            f"O{index:03d}"
+    ownership_data = [
+
+        ("O001", "1", Fraction(1, 2)),
+        ("O002", "1", Fraction(1, 2)),
+
+        ("O003", "2", Fraction(1, 1)),
+
+        ("O004", "3", Fraction(1, 3)),
+        ("O005", "3", Fraction(2, 3)),
+
+        ("O006", "4", Fraction(1, 4)),
+        ("O007", "4", Fraction(1, 4)),
+        ("O008", "4", Fraction(1, 2)),
+    ]
+
+    owners = {
+        owner.owner_code: owner
+        for owner in owner_service.find_by_village(
+            village.id,
+        )
+    }
+
+    khewats = {
+        k.khewat_no: k
+        for k in khewat_service.find_by_village(
+            village.id,
+        )
+    }
+
+    for owner_code, khewat_no, share in ownership_data:
+
+        owner = owners.get(
+            owner_code,
         )
 
-        if (
-            service.find_by_code(
-                owner_code,
-            )
-            is not None
-        ):
+        khewat = khewats.get(
+            khewat_no,
+        )
+
+        if owner is None or khewat is None:
 
             print(
-                f"Owner {owner_code} already exists."
+                f"Skipping {owner_code} / "
+                f"{khewat_no}"
             )
 
             continue
 
-        owner = Owner(
+        if ownership_service.exists(
+            owner.id,
+            khewat.id,
+        ):
 
-            village_id=village.id,
+            print(
+                f"{owner_code} -> "
+                f"Khewat {khewat_no} exists."
+            )
 
-            owner_code=owner_code,
+            continue
 
-            owner_name=owner_name,
+        ownership = Ownership(
 
-            father_name="Unknown",
+            owner_id=owner.id,
 
-            address="Taruana",
+            khewat_id=khewat.id,
 
-            mobile="",
+            share=share,
 
             remarks="Development Seed",
-
         )
 
-        service.register(
-            owner,
+        ownership_service.register(
+            ownership,
         )
 
         print(
-            f"Created Owner : "
-            f"{owner.owner_code} - "
-            f"{owner.owner_name}"
+            f"Created Ownership : "
+            f"{owner_code} -> "
+            f"Khewat {khewat_no} "
+            f"({share})"
         )
+
+
+def main() -> None:
+    """
+    Run the ownership seeder.
+    """
+
+    context = create_context()
+
+    seed_ownership(
+        context,
+    )
+
+
+if __name__ == "__main__":
+    main()
