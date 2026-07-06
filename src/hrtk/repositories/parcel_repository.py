@@ -7,6 +7,7 @@ Parcel Repository Interface.
 from __future__ import annotations
 
 from typing import Protocol
+from uuid import UUID
 
 from hrtk.domain.parcel import Parcel
 from hrtk.domain.value_objects.parcel_number import (
@@ -19,55 +20,51 @@ class ParcelRepository(Protocol):
     Repository contract for Parcel entities.
     """
 
+    # ---------------------------------------------------------
+    # CRUD
+    # ---------------------------------------------------------
+
     def add(
         self,
         parcel: Parcel,
     ) -> None:
-        """
-        Add a new parcel.
-        """
         ...
 
     def update(
         self,
         parcel: Parcel,
     ) -> None:
-        """
-        Update an existing parcel.
-        """
         ...
 
     def remove(
         self,
-        number: ParcelNumber,
+        parcel_id: UUID,
     ) -> None:
-        """
-        Remove a parcel.
-        """
         ...
+
+    # ---------------------------------------------------------
+    # Queries
+    # ---------------------------------------------------------
 
     def get(
         self,
-        number: ParcelNumber,
+        parcel_id: UUID,
     ) -> Parcel | None:
-        """
-        Return a parcel by number.
-        """
         ...
 
     def list(
         self,
     ) -> list[Parcel]:
-        """
-        Return all parcels.
-        """
         ...
 
     def exists(
         self,
-        number: ParcelNumber,
+        parcel_id: UUID,
     ) -> bool:
-        """
-        Determine whether a parcel exists.
-        """
+        ...
+
+    def find_by_number(
+        self,
+        number: ParcelNumber,
+    ) -> Parcel | None:
         ...

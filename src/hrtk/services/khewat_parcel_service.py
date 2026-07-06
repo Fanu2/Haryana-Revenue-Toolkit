@@ -96,3 +96,29 @@ class KhewatParcelService(
         return self.repository.find_by_parcel(
             parcel_id,
         )
+    def list(
+        self,
+    ) -> list[KhewatParcel]:
+        """
+        Return all relationships.
+        """
+
+        return self.repository.list()
+
+
+    def exists(
+        self,
+        khewat_id: UUID,
+        parcel_id: UUID,
+    ) -> bool:
+        """
+        Determine whether the parcel is already
+        assigned to the specified Khewat.
+        """
+
+        return any(
+            relationship.parcel_id == parcel_id
+            for relationship in self.find_by_khewat(
+                khewat_id,
+            )
+        )

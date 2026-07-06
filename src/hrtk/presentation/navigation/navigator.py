@@ -38,6 +38,7 @@ class Navigator(QTreeWidget):
         revenue.addChild(QTreeWidgetItem(["Owners"]))
         revenue.addChild(QTreeWidgetItem(["Khewats"]))
         revenue.addChild(QTreeWidgetItem(["Khasras"]))
+        revenue.addChild(QTreeWidgetItem(["Khewat-Parcel"]))
         revenue.addChild(QTreeWidgetItem(["Ownership"]))
         revenue.addChild(QTreeWidgetItem(["Jamabandi"]))
         revenue.addChild(QTreeWidgetItem(["Partition"]))

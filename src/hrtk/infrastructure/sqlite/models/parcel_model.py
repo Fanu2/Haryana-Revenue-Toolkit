@@ -18,17 +18,23 @@ from sqlalchemy.orm import (
     mapped_column,
 )
 
-from hrtk.infrastructure.sqlite.base import Base
+from hrtk.infrastructure.sqlite.base import (
+    Base,
+)
 
 
 class ParcelModel(Base):
     """
-    SQLite representation of a parcel.
+    SQLite representation of a Parcel.
     """
 
     __tablename__ = "parcels"
 
     __table_args__ = (
+        UniqueConstraint(
+            "entity_id",
+            name="uq_parcel_entity_id",
+        ),
         UniqueConstraint(
             "rectangle",
             "killa",
@@ -37,13 +43,23 @@ class ParcelModel(Base):
     )
 
     # ---------------------------------------------------------
-    # Primary Key
+    # Internal SQLite Primary Key
     # ---------------------------------------------------------
 
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         autoincrement=True,
+    )
+
+    # ---------------------------------------------------------
+    # Application UUID
+    # ---------------------------------------------------------
+
+    entity_id: Mapped[str] = mapped_column(
+        String(36),
+        nullable=False,
+        index=True,
     )
 
     # ---------------------------------------------------------

@@ -6,10 +6,17 @@ Parcel Entity.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import (
+    dataclass,
+    field,
+)
+
+from uuid import UUID
 
 from hrtk.domain.value_objects.area import Area
-from hrtk.domain.value_objects.parcel_number import ParcelNumber
+from hrtk.domain.value_objects.parcel_number import (
+    ParcelNumber,
+)
 
 
 @dataclass(
@@ -25,6 +32,16 @@ class Parcel:
     relationships are maintained separately.
     """
 
+    # ---------------------------------------------------------
+    # Identity
+    # ---------------------------------------------------------
+
+    id: UUID
+
+    # ---------------------------------------------------------
+    # Parcel Details
+    # ---------------------------------------------------------
+
     number: ParcelNumber
 
     area: Area
@@ -33,8 +50,14 @@ class Parcel:
         default="",
     )
 
+    # ---------------------------------------------------------
+    # Properties
+    # ---------------------------------------------------------
+
     @property
-    def is_empty(self) -> bool:
+    def is_empty(
+        self,
+    ) -> bool:
         """
         Return True if the parcel has zero area.
         """
@@ -43,7 +66,13 @@ class Parcel:
             self.area.total_sarsai == 0
         )
 
-    def display(self) -> str:
+    # ---------------------------------------------------------
+    # Display
+    # ---------------------------------------------------------
+
+    def display(
+        self,
+    ) -> str:
         """
         Human-readable description.
         """
@@ -53,23 +82,22 @@ class Parcel:
             f"({self.area.display()})"
         )
 
-    def __str__(self) -> str:
-        """
-        Compact representation.
-        """
+    def __str__(
+        self,
+    ) -> str:
 
-        return (
-            f"{self.number}"
+        return str(
+            self.number,
         )
 
-    def __repr__(self) -> str:
-        """
-        Developer representation.
-        """
+    def __repr__(
+        self,
+    ) -> str:
 
         return (
             "Parcel("
-            f"{self.number}, "
-            f"{self.area}"
+            f"id={self.id}, "
+            f"number={self.number}, "
+            f"area={self.area}"
             ")"
         )

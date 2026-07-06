@@ -21,6 +21,10 @@ DATABASE_FILE = (
     / "hrtk.db"
 )
 
+print("=" * 70)
+print("HRTK DATABASE:", DATABASE_FILE.resolve())
+print("=" * 70)
+
 DATABASE_FILE.parent.mkdir(
     parents=True,
     exist_ok=True,

@@ -77,7 +77,16 @@ class ParcelService:
         """
 
         return self._repository.list()
-    
+
+    def all(
+        self,
+    ) -> list[Parcel]:
+        """
+        Compatibility method.
+        """
+
+        return self.list()
+
     def update(
         self,
         parcel: Parcel,
