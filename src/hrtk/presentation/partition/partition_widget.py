@@ -519,6 +519,8 @@ class PartitionWidget(
 
         self._jamabandi_combo.clear()
 
+        jamabandis = []
+
         village_id = self._village_combo.currentData()
 
         if village_id is not None:
@@ -528,8 +530,10 @@ class PartitionWidget(
                 .jamabandi_service
                 .by_village(
                     village_id,
+                )
             )
-        )
+
+        
 
         for jamabandi in jamabandis:
 

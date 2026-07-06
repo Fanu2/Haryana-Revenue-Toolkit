@@ -55,7 +55,7 @@ class SQLitePartitionCaseRepository(
                     PartitionCaseModel
                 )
                 .filter_by(
-                    entity_id=str(case.id),
+                    id=str(case.id),
                 )
                 .first()
             )
@@ -99,7 +99,7 @@ class SQLitePartitionCaseRepository(
                     PartitionCaseModel
                 )
                 .filter_by(
-                    entity_id=str(case_id),
+                    id=str(case_id),
                 )
                 .first()
             )
@@ -123,7 +123,7 @@ class SQLitePartitionCaseRepository(
                     PartitionCaseModel
                 )
                 .filter_by(
-                    entity_id=str(case_id),
+                    id=str(case_id),
                 )
                 .first()
             )

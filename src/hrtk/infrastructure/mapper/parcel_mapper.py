@@ -6,6 +6,8 @@ Parcel Mapper.
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from hrtk.domain.parcel import Parcel
 from hrtk.domain.value_objects.area import Area
 from hrtk.domain.value_objects.parcel_number import (
@@ -31,6 +33,7 @@ class ParcelMapper:
         """
 
         return Parcel(
+            id=UUID(model.id),
             number=ParcelNumber(
                 rectangle=model.rectangle,
                 killa=model.killa,
@@ -53,6 +56,7 @@ class ParcelMapper:
         """
 
         return ParcelModel(
+            id=str(parcel.id),
             rectangle=parcel.number.rectangle,
             killa=parcel.number.killa,
             kanal=parcel.area.kanal,

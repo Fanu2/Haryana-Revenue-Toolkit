@@ -37,7 +37,7 @@ class PartitionAllocationMapper:
         """
 
         return PartitionAllocationModel(
-            entity_id=str(
+            id=str(
                 allocation.id,
             ),
             partition_case_id=str(
@@ -66,7 +66,7 @@ class PartitionAllocationMapper:
 
         return PartitionAllocation(
             id=UUID(
-                model.entity_id,
+                model.id,
             ),
             partition_case_id=UUID(
                 model.partition_case_id,

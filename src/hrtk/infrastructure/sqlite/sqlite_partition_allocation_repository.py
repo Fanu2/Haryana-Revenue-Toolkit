@@ -58,7 +58,7 @@ class SQLitePartitionAllocationRepository(
                     PartitionAllocationModel
                 )
                 .filter_by(
-                    entity_id=str(
+                    id=str(
                         allocation.id
                     ),
                 )
@@ -104,7 +104,7 @@ class SQLitePartitionAllocationRepository(
                     PartitionAllocationModel
                 )
                 .filter_by(
-                    entity_id=str(
+                    id=str(
                         allocation_id
                     ),
                 )
@@ -130,7 +130,7 @@ class SQLitePartitionAllocationRepository(
                     PartitionAllocationModel
                 )
                 .filter_by(
-                    entity_id=str(
+                    id=str(
                         allocation_id
                     ),
                 )

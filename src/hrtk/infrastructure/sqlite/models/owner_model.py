@@ -6,9 +6,10 @@ SQLite Owner Model.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from sqlalchemy import (
     Boolean,
-    Integer,
     String,
     UniqueConstraint,
 )
@@ -39,20 +40,10 @@ class OwnerModel(Base):
     # Primary Key
     # ---------------------------------------------------------
 
-    id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-
-    # ---------------------------------------------------------
-    # Domain Identity
-    # ---------------------------------------------------------
-
-    entity_id: Mapped[str] = mapped_column(
+    id: Mapped[str] = mapped_column(
         String(36),
-        nullable=False,
-        unique=True,
+        primary_key=True,
+        default=lambda: str(uuid4()),
     )
 
     # ---------------------------------------------------------

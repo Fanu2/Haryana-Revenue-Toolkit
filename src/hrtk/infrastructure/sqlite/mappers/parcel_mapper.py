@@ -37,7 +37,7 @@ class ParcelMapper:
     ) -> Parcel:
 
         return Parcel(
-            id=UUID(model.entity_id),
+            id=UUID(model.id),
             number=ParcelNumber(
                 rectangle=model.rectangle,
                 killa=model.killa,
@@ -56,7 +56,7 @@ class ParcelMapper:
     ) -> ParcelModel:
 
         return ParcelModel(
-            entity_id=str(parcel.id),
+            id=str(parcel.id),
             rectangle=parcel.number.rectangle,
             killa=parcel.number.killa,
             kanal=parcel.area.kanal,

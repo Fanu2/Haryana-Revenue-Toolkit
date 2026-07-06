@@ -64,7 +64,7 @@ class SQLiteKhewatParcelRepository(
                     KhewatParcelModel,
                 )
                 .filter_by(
-                    entity_id=str(
+                    id=str(
                         relationship.id,
                     ),
                 )
@@ -103,7 +103,7 @@ class SQLiteKhewatParcelRepository(
                     KhewatParcelModel,
                 )
                 .filter_by(
-                    entity_id=str(
+                    id=str(
                         relationship_id,
                     ),
                 )
@@ -131,7 +131,7 @@ class SQLiteKhewatParcelRepository(
                     KhewatParcelModel,
                 )
                 .filter_by(
-                    entity_id=str(
+                    id=str(
                         relationship_id,
                     ),
                 )

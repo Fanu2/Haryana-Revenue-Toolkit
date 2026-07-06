@@ -28,7 +28,7 @@ class OwnerMapper:
         """
 
         return OwnerModel(
-            entity_id=str(owner.id),
+            id=str(owner.id),
             village_id=str(owner.village_id),
             owner_code=owner.owner_code,
             owner_name=owner.owner_name,
@@ -48,7 +48,7 @@ class OwnerMapper:
         """
 
         return Owner(
-            id=UUID(model.entity_id),
+            id=UUID(model.id),
             village_id=UUID(model.village_id),
             owner_code=model.owner_code,
             owner_name=model.owner_name,

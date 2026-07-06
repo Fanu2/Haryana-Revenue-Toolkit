@@ -29,7 +29,7 @@ class PartitionCaseMapper:
         """
 
         return PartitionCaseModel(
-            entity_id=str(case.id),
+            id=str(case.id),
             village_id=str(case.village_id),
             khewat_id=str(case.khewat_id),
             jamabandi_year=case.jamabandi_year,
@@ -46,7 +46,7 @@ class PartitionCaseMapper:
         """
 
         return PartitionCase(
-            id=UUID(model.entity_id),
+            id=UUID(model.id),
             village_id=UUID(model.village_id),
             khewat_id=UUID(model.khewat_id),
             jamabandi_year=model.jamabandi_year,

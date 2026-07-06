@@ -31,7 +31,7 @@ class KhewatParcelMapper:
         """
 
         return KhewatParcelModel(
-            entity_id=str(
+            id=str(
                 relationship.id,
             ),
             khewat_id=str(
@@ -53,7 +53,7 @@ class KhewatParcelMapper:
 
         return KhewatParcel(
             id=UUID(
-                model.entity_id,
+                model.id,
             ),
             khewat_id=UUID(
                 model.khewat_id,

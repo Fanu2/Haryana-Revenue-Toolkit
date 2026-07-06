@@ -11,7 +11,7 @@ from dataclasses import (
     field,
 )
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from hrtk.domain.value_objects.area import Area
 from hrtk.domain.value_objects.parcel_number import (
@@ -21,6 +21,7 @@ from hrtk.domain.value_objects.parcel_number import (
 
 @dataclass(
     slots=True,
+    kw_only=True,
 )
 class Parcel:
     """
@@ -36,7 +37,9 @@ class Parcel:
     # Identity
     # ---------------------------------------------------------
 
-    id: UUID
+    id: UUID = field(
+        default_factory=uuid4,
+    )
 
     # ---------------------------------------------------------
     # Parcel Details

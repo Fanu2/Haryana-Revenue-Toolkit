@@ -91,7 +91,7 @@ class SQLiteKhewatRepository(KhewatRepository):
 
             model = (
                 session.query(KhewatModel)
-                .filter_by(id=entity_id)
+                .filter_by(id=str(entity_id))
                 .first()
             )
 
@@ -132,7 +132,7 @@ class SQLiteKhewatRepository(KhewatRepository):
 
             model = (
                 session.query(KhewatModel)
-                .filter_by(id=entity_id)
+                .filter_by(id=str(entity_id))
                 .first()
             )
 
