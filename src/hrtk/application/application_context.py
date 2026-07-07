@@ -88,6 +88,10 @@ from hrtk.services.khewat_parcel_service import (
     KhewatParcelService,
 )
 
+from hrtk.services.partition_allocation_service import (
+    PartitionAllocationService,
+)
+
 
 
 class ApplicationContext:
@@ -209,6 +213,12 @@ class ApplicationContext:
 
         self._partition_service = PartitionService(
         self._partition_repository,
+        )
+
+        self._partition_allocation_service = (
+            PartitionAllocationService(
+                self._partition_allocation_repository,
+            )
         )
 
         self._logging.logger.info(
@@ -343,6 +353,12 @@ class ApplicationContext:
         self,
     ) -> PartitionService:
         return self._partition_service
+    
+    @property
+    def partition_allocation_service(
+        self,
+    ) -> PartitionAllocationService:
+        return self._partition_allocation_service
     
     @property
     def khewat_parcel_service(

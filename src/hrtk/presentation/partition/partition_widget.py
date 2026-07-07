@@ -703,14 +703,13 @@ class PartitionWidget(
 
         if self._partition_case is not None:
 
-            self._allocations = (
+            allocations = (
                 self._context
-                .partition_allocation_repository
-                .find_by_partition_case(
-                    self._partition_case.id,
+                .partition_allocation_service
+                .by_partition_case(
+                    ...
                 )
-            )
-
+)
         else:
 
             self._allocations = []
@@ -719,11 +718,35 @@ class PartitionWidget(
         # Parcels
         #
 
-        self._khasras = (
+        #
+        # Parcels belonging to selected Khewat
+        #
+
+        relationships = (
             self._context
-            .parcel_service
-            .list()
+            .khewat_parcel_service
+            .find_by_khewat(
+                khewat_id,
+            )
         )
+
+        self._khasras = []
+
+        for relationship in relationships:
+
+            parcel = (
+                self._context
+                .parcel_service
+                .get_by_id(
+                    relationship.parcel_id,
+                )
+            )
+
+            if parcel is not None:
+
+                self._khasras.append(
+                    parcel,
+                )
 
         #
         # Owner Lookup
@@ -1151,7 +1174,7 @@ class PartitionWidget(
             allocation,
         )
 
-        self._context.partition_allocation_repository.add(
+        self._context.partition_allocation_service.add(
             allocation,
         )
 
@@ -1390,7 +1413,7 @@ class PartitionWidget(
 
         try:
 
-            self._context.partition_allocation_repository.remove(
+            self._context.partition_allocation_service.remove(
                 allocation.id,
             )
 
@@ -1664,85 +1687,3 @@ class PartitionWidget(
         self._allocation_table.refresh()
     
     
-    def _refresh_partition_ui(
-        self,
-    ) -> None:
-        """
-        Refresh all Partition UI components.
-        """
-
-        #
-        # Allocation Register
-        #
-
-        self._refresh_allocation_register()
-
-        #
-        # Summary Panels
-        #
-
-        self._owner_summary.set_values(
-            {
-                "Owners": str(
-                    len(
-                        self._ownerships,
-                    ),
-                ),
-            },
-        )
-
-        self._parcel_summary.set_values(
-            {
-                "Parcels": str(
-                    len(
-                        self._khasras,
-                    ),
-                ),
-            },
-        )
-
-        self._case_summary.set_values(
-            {
-                "Allocations": str(
-                    len(
-                        self._allocations,
-                    ),
-                ),
-            },
-        )
-
-        #
-        # Validation
-        #
-
-        self._validation.clear()
-
-        self._validation.set_valid(
-            "Ownership",
-        )
-
-        self._validation.set_valid(
-            "Parcels",
-        )
-
-        if self._allocations:
-
-            self._validation.set_valid(
-                "Allocation",
-                "Created",
-            )
-
-        else:
-
-            self._validation.set_warning(
-                "Allocation",
-                "Pending",
-            )
-
-        #
-        # Allocation Panels
-        #
-
-        self._allocation_summary.clear()
-
-        self._allocation_validation.show_default_state()
