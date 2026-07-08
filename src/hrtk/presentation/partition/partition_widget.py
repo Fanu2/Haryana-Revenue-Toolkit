@@ -642,8 +642,13 @@ class PartitionWidget(
         self,
     ) -> None:
         """
-        Load the complete Partition Workbench.
+        Load all data required by the
+        Partition Workbench.
         """
+
+        #
+        # Selected Khewat
+        #
 
         khewat_id = (
             self._khewat_combo.currentData()
@@ -658,7 +663,7 @@ class PartitionWidget(
             return
 
         #
-        # Ownership
+        # Ownerships
         #
 
         self._ownerships = (
@@ -669,11 +674,13 @@ class PartitionWidget(
             )
         )
 
-                #
+        #
         # Existing Partition Case
         #
 
         self._partition_case = None
+
+        self._allocations = []
 
         jamabandi_id = (
             self._jamabandi_combo.currentData()
@@ -701,25 +708,25 @@ class PartitionWidget(
                     )
                 )
 
-        if self._partition_case is not None:
+                if self._partition_case is not None:
 
-            allocations = (
-                self._context
-                .partition_allocation_service
-                .by_partition_case(
-                    ...
-                )
-)
-        else:
+                    #
+                    # NOTE:
+                    # Replace ".id" if your service
+                    # expects another argument.
+                    #
 
-            self._allocations = []
+                    self._allocations = (
+                        self._context
+                        .partition_allocation_service
+                        .by_partition_case(
+                            self._partition_case.id,
+                        )
+                    )
 
         #
-        # Parcels
-        #
-
-        #
-        # Parcels belonging to selected Khewat
+        # Parcels belonging to the selected
+        # Khewat.
         #
 
         relationships = (
@@ -749,7 +756,7 @@ class PartitionWidget(
                 )
 
         #
-        # Owner Lookup
+        # Owner lookup
         #
 
         self._owner_names.clear()
@@ -765,7 +772,7 @@ class PartitionWidget(
             ] = owner.display_name
 
         #
-        # Populate Tables
+        # Populate tables
         #
 
         self._owner_table.set_ownerships(
@@ -778,84 +785,19 @@ class PartitionWidget(
         )
 
         #
-        # Summary Panels
+        # Refresh complete workspace
         #
 
-        self._owner_summary.set_values(
-            {
-                "Owners": str(
-                    len(
-                        self._ownerships,
-                    ),
-                ),
-            },
-        )
-
-        self._parcel_summary.set_values(
-            {
-                "Parcels": str(
-                    len(
-                        self._khasras,
-                    ),
-                ),
-            },
-        )
-
-        self._case_summary.set_values(
-            {
-                "Allocations": str(
-                    len(
-                        self._allocations,
-                    ),
-                ),
-            },
-        )
-
-        #
-        # Validation
-        #
-
-        self._validation.clear()
-
-        self._validation.set_valid(
-            "Ownership",
-        )
-
-        self._validation.set_valid(
-            "Parcels",
-        )
-
-        if self._allocations:
-
-            self._validation.set_valid(
-                "Allocation",
-                "Created",
-            )
-
-        else:
-
-            self._validation.set_warning(
-                "Allocation",
-                "Pending",
-            )
-
-        #
-        # Allocation Panels
-        #
-
-        self._allocation_summary.clear()
-
-        self._allocation_validation.show_default_state()
-
-        #
-        # Status
-        #
+        self._refresh_partition_ui()
 
         self._status.setText(
-            f"Loaded "
-            f"{len(self._ownerships)} Owners, "
-            f"{len(self._khasras)} Khasras.",
+            (
+                f"Loaded "
+                f"{len(self._ownerships)} Owners, "
+                f"{len(self._khasras)} Khasras."
+            ),
         )
+    
     def _owner_selected(
         self,
     ) -> None:
@@ -1055,9 +997,13 @@ class PartitionWidget(
         self,
     ) -> None:
         """
-        Create an in-memory allocation from the
-        currently selected Owner and Khasra.
+        Create a new allocation for the selected
+        Owner and Khasra.
         """
+
+        #
+        # Selected Owner
+        #
 
         ownership = (
             self._owner_table.selected_ownership()
@@ -1070,6 +1016,10 @@ class PartitionWidget(
             )
 
             return
+
+        #
+        # Selected Parcel
+        #
 
         parcel = (
             self._khasra_table.selected_khasra()
@@ -1084,7 +1034,7 @@ class PartitionWidget(
             return
 
         #
-        # Determine allocation area
+        # Allocation Area
         #
 
         if (
@@ -1116,10 +1066,7 @@ class PartitionWidget(
         # Validation
         #
 
-        if (
-            allocated_area
-            == Area.zero()
-        ):
+        if allocated_area == Area.zero():
 
             self._status.setText(
                 "Enter an allocation area.",
@@ -1138,12 +1085,13 @@ class PartitionWidget(
 
             return
 
-        
-        #         
-        # Ensure a Partition Case exists
+        #
+        # Ensure Partition Case
         #
 
-        case = self._ensure_partition_case()
+        case = (
+            self._ensure_partition_case()
+        )
 
         if case is None:
 
@@ -1157,13 +1105,15 @@ class PartitionWidget(
         # Create Allocation
         #
 
-        allocation = PartitionAllocation(
-            id=uuid4(),
-            partition_case_id=case.id,
-            owner_id=ownership.owner_id,
-            parcel_number=parcel.number,
-            allocated_area=allocated_area,
-            remarks="",
+        allocation = (
+            PartitionAllocation(
+                id=uuid4(),
+                partition_case_id=case.id,
+                owner_id=ownership.owner_id,
+                parcel_number=parcel.number,
+                allocated_area=allocated_area,
+                remarks="",
+            )
         )
 
         #
@@ -1179,9 +1129,38 @@ class PartitionWidget(
         )
 
         #
-        # Refresh UI
+        # Refresh Allocation Register
         #
 
+        self._refresh_allocation_register()
+
+        #
+        # Refresh Workspace
+        #
+
+        self._refresh_partition_ui()
+
+        #
+        # Refresh Current Selection
+        #
+
+        self._owner_selected()
+
+        self._khasra_selected()
+
+        #
+        # Update Toolbar
+        #
+
+        self._update_toolbar_state()
+
+        #
+        # Status
+        #
+
+        self._status.setText(
+            "Allocation created successfully.",
+        )
     def _refresh_partition_ui(
         self,
     ) -> None:
@@ -1231,30 +1210,16 @@ class PartitionWidget(
         )
 
         #
-        # Total Allocated Area
+        # Allocation Summary
+        #
+        # This panel is updated from
+        # _owner_selected() and
+        # _khasra_selected().
         #
 
-        total_allocated = Area.zero()
+        if not self._allocations:
 
-        for allocation in self._allocations:
-
-            total_allocated = (
-                total_allocated
-                + allocation.allocated_area
-            )
-
-        self._allocation_summary.set_values(
-            {
-                "Allocations": str(
-                    len(
-                        self._allocations,
-                    ),
-                ),
-                "Allocated Area": (
-                    total_allocated.display()
-                ),
-            },
-        )
+            self._allocation_summary.clear()
 
         #
         # Validation
@@ -1293,11 +1258,7 @@ class PartitionWidget(
         #
 
         self._update_toolbar_state()
-
-    # ---------------------------------------------------------
-    # Toolbar Actions
-    # ---------------------------------------------------------
-
+    
     def _save_partition(
         self,
     ) -> None:
