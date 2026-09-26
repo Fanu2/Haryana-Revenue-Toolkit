@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Haryana Revenue Toolkit — a practical desktop workspace for Haryana land records, ownership, Khewat, Khasra and Jamabandi workflows by JASS Digital Lab.">
+  <meta name="theme-color" content="#08110d">
+  <link rel="canonical" href="https://fanu2.github.io/Haryana-Revenue-Toolkit/">
+  <link rel="stylesheet" href="jass-global.css">
+  <title>Haryana Revenue Toolkit · JASS Digital Lab</title>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="https://fanu2.github.io/JASS-Digital-Lab/">JASS<span>·</span>Digital Lab</a>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#modules">Modules</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#workflow">Workflow</a>
+      <a class="nav-button" href="https://github.com/Fanu2/Haryana-Revenue-Toolkit">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="map-lines"></div>
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow">JASS DIGITAL LAB · LAND &amp; REVENUE SYSTEMS</div>
+    <div class="hero-mark">
+      <div class="land-symbol"><span></span><span></span><span></span><span></span></div>
+      <div class="mark-text">HRTK</div>
+    </div>
+    <h1>Haryana Revenue<br><span>Toolkit</span></h1>
+    <p class="hero-title">A practical desktop workspace for land-record workflows.</p>
+    <p class="hero-copy">
+      A focused software system for working with Haryana land-record concepts such as
+      owners, Khewat, Khasra, ownership and Jamabandi — bringing related workflows
+      together in a structured local application.
+    </p>
+    <div class="hero-actions">
+      <a class="button primary" href="https://github.com/Fanu2/Haryana-Revenue-Toolkit">Explore on GitHub</a>
+      <a class="button ghost" href="#modules">Explore Modules</a>
+    </div>
+    <div class="hero-tags">
+      <span>Python</span><span>PySide6</span><span>SQLite</span><span>Land Records</span><span>Local Desktop</span>
+    </div>
+  </div>
+</section>
+
+<section id="overview" class="section">
+  <div class="wrap">
+    <div class="section-heading">
+      <div class="eyebrow">01 · THE PROJECT</div>
+      <h2>Turning land-record concepts into software.</h2>
+      <p>
+        HRTK is designed around the structure of land and revenue information rather
+        than treating it as a generic document application. The goal is a practical,
+        understandable workspace where related records can be explored and connected.
+      </p>
+    </div>
+    <div class="stats">
+      <div><strong>6</strong><span>Core frozen modules</span></div>
+      <div><strong>SQLite</strong><span>Local data foundation</span></div>
+      <div><strong>PySide6</strong><span>Desktop interface</span></div>
+      <div><strong>Haryana</strong><span>Domain focus</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="modules" class="section section-dark">
+  <div class="wrap">
+    <div class="section-heading center">
+      <div class="eyebrow">02 · CORE MODULES</div>
+      <h2>The land-record workspace.</h2>
+      <p>
+        The core HRTK modules were deliberately frozen as a stable foundation before
+        expanding the surrounding ecosystem.
+      </p>
+    </div>
+    <div class="modules">
+      <article class="module"><b>01</b><h3>Village</h3><p>Establish the geographic and administrative context in which land records are organized.</p></article>
+      <article class="module"><b>02</b><h3>Owner</h3><p>Work with ownership entities and the people represented in the land-record structure.</p></article>
+      <article class="module"><b>03</b><h3>Khewat</h3><p>Provide a structured workspace around Khewat-level ownership groupings and shares.</p></article>
+      <article class="module"><b>04</b><h3>Khasra / Parcel</h3><p>Represent parcel-level information and connect it with the surrounding ownership structure.</p></article>
+      <article class="module featured"><b>05</b><h3>Ownership</h3><p>Bring ownership relationships and land shares into a dedicated workspace.</p><em>Release A3.2 · frozen</em></article>
+      <article class="module"><b>06</b><h3>Jamabandi</h3><p>Provide a structured place for working with Jamabandi-oriented information and records.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" class="section">
+  <div class="wrap">
+    <div class="section-heading">
+      <div class="eyebrow">03 · TECHNICAL FOUNDATION</div>
+      <h2>Local software for structured records.</h2>
+      <p>
+        HRTK follows the JASS preference for practical desktop software: a focused
+        GUI, a local database and domain-specific modules that can evolve independently.
+      </p>
+    </div>
+    <div class="architecture">
+      <div class="arch-card">
+        <div class="arch-icon">01</div>
+        <h3>PySide6</h3>
+        <p>Desktop UI and workflow layer for a practical, responsive local application.</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">02</div>
+        <h3>SQLite</h3>
+        <p>Local structured data foundation supporting a self-contained workspace.</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">03</div>
+        <h3>Domain Modules</h3>
+        <p>Village, Owner, Khewat, Khasra, Ownership and Jamabandi form the application vocabulary.</p>
+      </div>
+    </div>
+
+    <div class="data-flow">
+      <div class="flow-item">LAND CONTEXT</div><span>→</span>
+      <div class="flow-item">OWNERSHIP</div><span>→</span>
+      <div class="flow-item">PARCELS</div><span>→</span>
+      <div class="flow-item">JAMABANDI</div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow" class="section section-dark">
+  <div class="wrap">
+    <div class="section-heading center">
+      <div class="eyebrow">04 · SYSTEM DIRECTION</div>
+      <h2>From toolkit to land-record ecosystem.</h2>
+      <p>
+        HRTK is part of a wider JASS land and revenue software direction, alongside
+        related tools for partition, extraction, land-share workspaces and exploration.
+      </p>
+    </div>
+    <div class="roadmap">
+      <div class="road"><span>HRTK</span><p>Core land-record foundation</p></div>
+      <div class="road"><span>HPM</span><p>Partition case workflows</p></div>
+      <div class="road"><span>GIS</span><p>Geographic and parcel-oriented extensions</p></div>
+      <div class="road"><span>DATA</span><p>Extraction, migration and structured datasets</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap philosophy">
+    <div>
+      <div class="eyebrow">05 · JASS APPROACH</div>
+      <h2>Practical.<br><span>Structured.</span><br>Understandable.</h2>
+    </div>
+    <div class="principles">
+      <article><b>Domain-first</b><p>Start with the real concepts and relationships the software needs to represent.</p></article>
+      <article><b>Local-first</b><p>Keep the core workspace useful without requiring a cloud service.</p></article>
+      <article><b>Modular</b><p>Separate functional areas so the system can grow without losing clarity.</p></article>
+      <article><b>Desktop-focused</b><p>Use a dedicated GUI where structured, repetitive workflows benefit from a focused workspace.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <div class="eyebrow">HARYANA REVENUE TOOLKIT · JASS DIGITAL LAB</div>
+    <h2>Software for working with land records<br>one structured layer at a time.</h2>
+    <div class="hero-actions">
+      <a class="button primary" href="https://github.com/Fanu2/Haryana-Revenue-Toolkit">View Repository</a>
+      <a class="button ghost" href="https://fanu2.github.io/Project-Athena/">Project Athena</a>
+      <a class="button ghost" href="https://fanu2.github.io/SinghJasvir/">JASS Profile</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap"><span>© JASS Digital Lab</span><span>Haryana Revenue Toolkit · Land &amp; Revenue Systems</span></div>
+</footer>
+</body>
+</html>
